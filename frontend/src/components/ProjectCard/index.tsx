@@ -8,7 +8,12 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Shuffle, Settings, Folder } from "lucide-react";
-import { Dialog, DialogHeader, DialogTrigger } from "../ui/dialog";
+import {
+  Dialog,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
+} from "../ui/dialog";
 import { DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { useForm } from "react-hook-form";
@@ -99,6 +104,10 @@ const ProjectSettingDialog = () => {
             <div className="w-full">
               <h4>分包设置</h4>
             </div>
+            <div className="w-full mt-6"></div>
+            <DialogFooter>
+              <Button type="submit">保存</Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
