@@ -27,6 +27,8 @@ import {
 } from "@radix-ui/react-select";
 import { Select } from "../ui/select";
 import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 
 export interface Project {
   name: string;
@@ -82,7 +84,7 @@ const ProjectSettingDialog = () => {
             ></FormField>
             <FormField
               control={form.control}
-              name="deviceOrientation"
+              name="output"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>输出目录</FormLabel>
@@ -100,10 +102,11 @@ const ProjectSettingDialog = () => {
                 </FormItem>
               )}
             ></FormField>
-            <Separator />
-            <div className="w-full">
-              <h4>分包设置</h4>
+            <div className="flex items-center space-x-4">
+              <Label>开启分包设置</Label>
+              <Switch></Switch>
             </div>
+            <Separator />
             <div className="w-full mt-6"></div>
             <DialogFooter>
               <Button type="submit">保存</Button>
@@ -132,9 +135,7 @@ const ProjectCard = (props: ProjectCardProps) => {
             <Button variant="outline" size="icon">
               <Shuffle />
             </Button>
-            <Button variant="outline" size="icon">
-              <Settings />
-            </Button>
+            <ProjectSettingDialog />
           </div>
         </CardContent>
       </CardHeader>
