@@ -24,6 +24,13 @@ interface ISettings {
 const SettingsDialog = () => {
   const form = useForm<ISettings>();
   const onSubmit: SubmitHandler<ISettings> = (data) => console.log(data);
+  const { setValue } = form;
+
+  const getExecuteGodot = () => {
+    window.pywebview.api.get_godot_execute().then((value) => {
+      setValue("godotExecute", String(value), { shouldValidate: true });
+    });
+  };
 
   return (
     <DialogContent className="w-96">
@@ -41,7 +48,13 @@ const SettingsDialog = () => {
                 <FormControl>
                   <div className="flex w-full max-w-sm items-center space-x-1">
                     <Input placeholder="C:\godot.exe" {...field} />
-                    <Button variant="outline" size="icon">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        getExecuteGodot();
+                      }}
+                    >
                       <Folder />
                     </Button>
                   </div>

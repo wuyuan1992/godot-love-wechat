@@ -1,5 +1,6 @@
 import os
 import threading
+import json
 from time import time
 
 import webview
@@ -16,6 +17,29 @@ class Api:
 
         with open(filename, "w") as f:
             f.write(content)
+
+    def save_settings(self, settings):
+        s = json.dumps(settings, indent=4)
+        with open("./settings.json", "w") as f:
+            f.write(s)
+
+    def get_settings(self, settings):
+        if os.path.exists("./settings.json"):
+            with open(json.dumps("./settings.json"), "r") as f:
+                settings = f.read()
+            return json.loads(settings)
+        return {"godotExecute": ""}
+
+    def get_godot_execute(self):
+        filename = webview.active_window().create_file_dialog(
+            dialog_type=webview.OPEN_DIALOG,
+            allow_multiple=False,
+            directory="~",
+            file_types=("Godot Execute (*.exe)",),
+        )
+        if not filename:
+            return
+        return filename
 
     def ls(self):
         return os.listdir(".")
@@ -68,10 +92,17 @@ def update_ticker():
 
 
 if __name__ == "__main__":
-    window = webview.create_window("pywebview-react boilerplate", entry, js_api=Api(), width=1024, height=800, min_size=(1024, 800))
+    window = webview.create_window(
+        "pywebview-react boilerplate",
+        entry,
+        js_api=Api(),
+        width=1024,
+        height=800,
+        min_size=(1024, 800),
+    )
     window.settings = {
-        'ALLOW_FILE_URLS': True,
-        'OPEN_EXTERNAL_LINKS_IN_BROWSER': True,
-        'OPEN_DEVTOOLS_IN_DEBUG': True
+        "ALLOW_FILE_URLS": True,
+        "OPEN_EXTERNAL_LINKS_IN_BROWSER": True,
+        "OPEN_DEVTOOLS_IN_DEBUG": True,
     }
     webview.start(update_ticker, debug=True)
