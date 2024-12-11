@@ -23,9 +23,9 @@ class Api:
         with open("./settings.json", "w") as f:
             f.write(s)
 
-    def get_settings(self, settings):
-        if os.path.exists("./settings.json"):
-            with open(json.dumps("./settings.json"), "r") as f:
+    def get_settings(self):
+        if os.path.exists(os.path.join(os.path.dirname(__file__), "../settings.json")):
+            with open("./settings.json", "r") as f:
                 settings = f.read()
             return json.loads(settings)
         return {"godotExecute": ""}
