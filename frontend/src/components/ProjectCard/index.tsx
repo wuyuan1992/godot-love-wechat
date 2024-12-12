@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useState } from "react";
 import {
   SelectContent,
@@ -33,25 +33,39 @@ import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { Separator } from "../ui/separator";
 
-export interface Project {
+export interface IProject {
   name: string;
   description: string;
   version: string;
+  path: string;
   icon: string;
 }
 
-export interface ProjectCardProps extends Project {
+export interface ProjectCardProps extends IProject {
   key: number;
 }
 
-export interface ExportSettings {
+export interface IExportSettings {
   exportPath: string;
   deviceOrientation: string;
 }
 
-const ProjectSettingDialog = () => {
-  const form = useForm({});
+const ProjectSettingDialog = (props: { projectPath: string }) => {
+  const form = useForm<IExportSettings>({});
+  const { setValue } = form;
   const [open, setOpen] = useState(false);
+  const onSubmit: SubmitHandler<IExportSettings> = (data) => {
+    window.pywebview.api
+      .save_export_settings(props.projectPath, data)
+      .then(() => {
+        setOpen(false);
+      });
+  };
+  const getExportPath = () => {
+    window.pywebview.api.open_export_path(props.projectPath).then((value) => {
+      setValue("exportPath", String(value));
+    });
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
@@ -66,7 +80,7 @@ const ProjectSettingDialog = () => {
             <DialogTitle>导出设置</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form className="space-y-8">
+            <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="deviceOrientation"
@@ -79,7 +93,7 @@ const ProjectSettingDialog = () => {
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue></SelectValue>
+                          <SelectValue placeholder="选择游戏是横屏还是竖屏"></SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -94,7 +108,7 @@ const ProjectSettingDialog = () => {
               ></FormField>
               <FormField
                 control={form.control}
-                name="output"
+                name="exportPath"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>输出目录</FormLabel>
@@ -104,7 +118,14 @@ const ProjectSettingDialog = () => {
                           placeholder="小游戏工程输出目录"
                           {...field}
                         ></Input>
-                        <Button variant="outline" size="icon">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={(event) => {
+                            getExportPath();
+                            event.preventDefault();
+                          }}
+                        >
                           <Folder />
                         </Button>
                       </div>
@@ -146,7 +167,9 @@ const ProjectCard = (props: ProjectCardProps) => {
             <Button variant="outline" size="icon">
               <Shuffle />
             </Button>
-            <ProjectSettingDialog />
+            <ProjectSettingDialog
+              projectPath={props.path}
+            ></ProjectSettingDialog>
           </div>
         </CardContent>
       </CardHeader>

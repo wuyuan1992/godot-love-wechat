@@ -1,5 +1,6 @@
 import os
 import threading
+import pathlib
 import re
 import json
 import base64
@@ -56,6 +57,11 @@ class Api:
         with open("./settings.json", "w+") as f:
             f.write(json.dumps(data, indent=2))
 
+    def save_export_settings(self, projectPath, settings):
+        export_settings_path = os.path.join(projectPath, "minigame.export.json")
+        with open(export_settings_path, "w+") as f:
+            f.write(json.dumps(settings, indent=2))
+
     def get_godot_execute(self):
         filename = webview.active_window().create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
@@ -92,6 +98,7 @@ class Api:
         application = project_data["application"]
         project = {
             "name": application.get("config/name", ""),
+            "path": folder,
             "version": application.get("config/version", ""),
             "description": application.get("config/description", ""),
             "icon": (
@@ -108,6 +115,14 @@ class Api:
             json_projects = json.dumps(projects, indent=2)
             f.write(json_projects)
         return projects
+
+    def open_export_path(self, project_path):
+        export_folder = webview.active_window().create_file_dialog(
+            dialog_type=webview.FOLDER_DIALOG, directory="", allow_multiple=False
+        )
+        export_folder = pathlib.Path(export_folder[0])
+        project_path = pathlib.Path(project_path)
+        return export_folder.relative_to(project_path).as_posix()
 
 
 def get_entrypoint():

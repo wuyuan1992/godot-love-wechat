@@ -3,12 +3,12 @@ import logo from "./assets/logo.png";
 import SettingsDialog, { ISettings } from "./components/SettingDIalog";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
-import ProjectCard, { Project } from "./components/ProjectCard";
+import ProjectCard, { IProject } from "./components/ProjectCard";
 
 function App() {
   const [, setSettings] = useState<ISettings>();
   const [projects, setProjects] = useState();
-  const [filterProjects, setFilterProjects] = useState<Project[]>([]);
+  const [filterProjects, setFilterProjects] = useState<IProject[]>([]);
   const [, setSearch] = useState<string>();
   useEffect(() => {
     const getSettings = () => {
@@ -97,6 +97,7 @@ function App() {
               <ProjectCard
                 key={index}
                 icon={project.icon}
+                path={project.path}
                 name={project.name}
                 description={project.description}
                 version={project.version}
