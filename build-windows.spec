@@ -4,7 +4,7 @@
 block_cipher = None
 added_files = [
     ('.\\gui', 'gui'),
-    ('.\\resources, 'resources')
+    ('.\\resources', 'resources'),
 ]
 
 a = Analysis(['.\\backend\\index.py'],
@@ -29,7 +29,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='pywebview-react',
+          name='Godot导出工具',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

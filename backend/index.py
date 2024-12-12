@@ -49,14 +49,16 @@ def parse_godot_project(file_path):
 
 class Api:
     def get_settings(self):
-        if os.path.exists(os.path.join(os.path.dirname(__file__), "../settings.json")):
-            with open("./settings.json", "r") as f:
+        path = "./settings.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
                 settings = f.read()
             return json.loads(settings)
         return {"godotExecute": ""}
 
     def save_settings(self, data):
-        with open("./settings.json", "w+") as f:
+        path = "./settings.json"
+        with open(path, "w+") as f:
             f.write(json.dumps(data, indent=2))
 
     def save_export_settings(self, projectPath, settings):
@@ -82,8 +84,9 @@ class Api:
         return filename
 
     def read_projects(self):
-        if os.path.exists(os.path.join(os.path.dirname(__file__), "../projects.json")):
-            with open("./projects.json", "r") as f:
+        path = "./projects.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
                 projects = f.read()
                 projects = json.loads(projects)
             _projects = []
@@ -118,8 +121,8 @@ class Api:
         project["icon"] = os.path.join(folder, project["icon"])
         projects = self.read_projects()
         projects.append(project)
-        print(projects)
-        with open("./projects.json", "w+") as f:
+        project_path = "./projects.json"
+        with open(project_path, "w+") as f:
             json_projects = json.dumps(projects, indent=2)
             f.write(json_projects)
         return projects
@@ -136,6 +139,19 @@ class Api:
     def export_game(self, project_path, export_path):
         def exists(path):
             return os.path.exists(os.path.join(os.path.dirname(__file__), path))
+
+        def get_template_resource_path(project_type):
+            if exists(f"./resources/minigame.{project_type}.zip"):
+                return os.path.join(
+                    os.path.dirname(__file__),
+                    f"./resources/minigame.{project_type}.zip",
+                )
+            if exists(f"../resources/minigame.{project_type}.zip"):
+                return os.path.join(
+                    os.path.dirname(__file__),
+                    f"../resources/minigame.{project_type}.zip",
+                )
+            raise Exception("not found export template")
 
         def save_game_json(path, game_json):
             game_json_path = os.path.join(path, "game.json")
@@ -154,32 +170,31 @@ class Api:
         export_path = os.path.join(project_path, export_path)
         export_settings = self.get_export_settings(project_path)
         project_type = export_settings.get("projectType", "full")
-        if exists(f"../resources/minigame.{project_type}.zip"):
-            with zipfile.ZipFile(f"./resources/minigame.{project_type}.zip", "r") as zf:
-                zf.extractall(export_path)
-            game_json = read_game_json(export_path)
-            game_json["deviceOrientation"] = export_settings.get(
-                "deviceOrientation", "portrait"
-            )
-            save_game_json(export_path, game_json)
+        with zipfile.ZipFile(get_template_resource_path(project_type), "r") as zf:
+            zf.extractall(export_path)
+        game_json = read_game_json(export_path)
+        game_json["deviceOrientation"] = export_settings.get(
+            "deviceOrientation", "portrait"
+        )
+        save_game_json(export_path, game_json)
 
-            # TODO: 分包设置
-            if export_settings.get("subPackages", ""):
-                pass
-            else:
-                pckPath = os.path.join(export_path, "engine/godot.zip")
-                result = subprocess.run(
-                    [
-                        godot_execute,
-                        "--headless",
-                        "--path",
-                        project_path,
-                        "--export-pack",
-                        "Web",
-                        pckPath,
-                    ]
-                )
-                print(result)
+        # TODO: 分包处理？
+        if export_settings.get("subPackages", ""):
+            pass
+        else:
+            pckPath = os.path.join(export_path, "engine/godot.zip")
+            result = subprocess.run(
+                [
+                    godot_execute,
+                    "--headless",
+                    "--path",
+                    project_path,
+                    "--export-pack",
+                    "Web",
+                    pckPath,
+                ]
+            )
+            print(result)
 
 
 def get_entrypoint():
