@@ -2,6 +2,7 @@ venv
 gui
 build
 dist
-
+settings.json
+projects.json
 .DS_Store
 node_modules
