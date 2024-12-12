@@ -1,4 +1,8 @@
-# Godot4.3微信小游戏导出工具 
+<div align="center">
+  <h1>Godot小游戏转换工具</h1>
+  <img src="./backend/assets/logo.svg"></img>
+</div>
+<br/>
 
 这是一个将Godot4.3 将WEB适配为微信小游戏的小工具，自行编译了Godot4.3的WASM，将ScriptProcessor的音频废案代码重新添加回来，使得在微信小游戏当中能够播放声音,并且受控于Godot的音频总线。
 
