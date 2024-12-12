@@ -44,5 +44,5 @@
 ![](./pics/wechat3.png)
 ![](./pics/wechat4.png)
 
-旧版本可能还要打开wasm参考Unity的设置
+旧版本可能还要打开wasm设置参考Unity的设置
 https://developer.unity.cn/projects/660b867dedbc2a2cce4cbf71
