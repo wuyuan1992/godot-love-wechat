@@ -59,7 +59,6 @@ const SettingsDialog = (props: DialogProps) => {
   const getExecuteGodot = () => {
     window.pywebview.api.get_godot_execute().then((value) => {
       setValue("godotExecute", String(value), { shouldValidate: true });
-      setOpen(true);
     });
   };
 
@@ -88,8 +87,9 @@ const SettingsDialog = (props: DialogProps) => {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => {
+                        onClick={(event) => {
                           getExecuteGodot();
+                          event.preventDefault();
                         }}
                       >
                         <Folder />

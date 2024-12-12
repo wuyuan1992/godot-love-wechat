@@ -52,6 +52,10 @@ class Api:
             return json.loads(settings)
         return {"godotExecute": ""}
 
+    def save_settings(self, data):
+        with open("./settings.json", "w+") as f:
+            f.write(json.dumps(data, indent=2))
+
     def get_godot_execute(self):
         filename = webview.active_window().create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,

@@ -11,10 +11,13 @@ import { Shuffle, Settings, Folder } from "lucide-react";
 import {
   Dialog,
   DialogFooter,
+  DialogContent,
   DialogHeader,
+  DialogOverlay,
   DialogTrigger,
+  DialogPortal,
+  DialogTitle,
 } from "../ui/dialog";
-import { DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
@@ -23,12 +26,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Separator,
-} from "@radix-ui/react-select";
+} from "../ui/select";
 import { Select } from "../ui/select";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
+import { Separator } from "../ui/separator";
 
 export interface Project {
   name: string;
@@ -41,79 +44,87 @@ export interface ProjectCardProps extends Project {
   key: number;
 }
 
+export interface ExportSettings {
+  exportPath: string;
+  deviceOrientation: string;
+}
+
 const ProjectSettingDialog = () => {
   const form = useForm({});
   const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <Button variant="outline" size="icon">
           <Settings />
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-96">
-        <DialogHeader>
-          <DialogTitle>工具设置</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form className="space-y-8">
-            <FormField
-              control={form.control}
-              name="deviceOrientation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>屏幕方向</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue></SelectValue>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogContent className="max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>导出设置</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form className="space-y-8">
+              <FormField
+                control={form.control}
+                name="deviceOrientation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>屏幕方向</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue></SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
                       <SelectContent>
-                        <SelectItem value="portrait">竖向</SelectItem>
-                        <SelectItem value="landscape">横向</SelectItem>
+                        <SelectContent>
+                          <SelectItem value="portrait">竖向</SelectItem>
+                          <SelectItem value="landscape">横向</SelectItem>
+                        </SelectContent>
                       </SelectContent>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            ></FormField>
-            <FormField
-              control={form.control}
-              name="output"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>输出目录</FormLabel>
-                  <FormControl>
-                    <div className="flex w-full max-w-sm items-center space-x-1">
-                      <Input
-                        placeholder="小游戏工程输出目录"
-                        {...field}
-                      ></Input>
-                      <Button variant="outline" size="icon">
-                        <Folder />
-                      </Button>
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            ></FormField>
-            <div className="flex items-center space-x-4">
-              <Label>开启分包设置</Label>
-              <Switch></Switch>
-            </div>
-            <Separator />
-            <div className="w-full mt-6"></div>
-            <DialogFooter>
-              <Button type="submit">保存</Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+                    </Select>
+                  </FormItem>
+                )}
+              ></FormField>
+              <FormField
+                control={form.control}
+                name="output"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>输出目录</FormLabel>
+                    <FormControl>
+                      <div className="flex w-full items-center space-x-1">
+                        <Input
+                          placeholder="小游戏工程输出目录"
+                          {...field}
+                        ></Input>
+                        <Button variant="outline" size="icon">
+                          <Folder />
+                        </Button>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              ></FormField>
+              <div className="flex items-center space-x-4">
+                <Label>开启分包设置</Label>
+                <Switch></Switch>
+              </div>
+              <Separator />
+              <div className="w-full mt-6"></div>
+              <DialogFooter>
+                <Button type="submit">保存</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 };
