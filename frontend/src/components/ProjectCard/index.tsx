@@ -190,14 +190,21 @@ const ProjectSettingDialog = (props: {
 };
 
 const ProjectCard = (props: ProjectCardProps) => {
+  const { toast } = useToast();
   const [exportSettings, setExportSettings] = useState<IExportSettings>();
   const exportGame = () => {
     if (exportSettings) {
-      window.pywebview.api.export_game(props.path, exportSettings.exportPath);
+      window.pywebview.api
+        .export_game(props.path, exportSettings.exportPath)
+        .then(() => {
+          toast({
+            variant: "default",
+            title: "导出成功",
+            description: "导出成功了，用开发者工具导入吧！",
+          });
+        });
     }
   };
-
-  const { toast } = useToast();
 
   useEffect(() => {
     const getExportSettings = () => {
