@@ -166,13 +166,13 @@ class Api:
 
         def read_project_private_json(path):
             private_json_path = os.path.join(path, "project.private.config.json")
-            with open(private_json_path, "r") as f:
+            with open(private_json_path, "r", encoding="utf-8") as f:
                 private_json = json.loads(f.read())
             return private_json
 
         def save_project_private_json(path, data):
             private_json_path = os.path.join(path, "project.private.config.json")
-            with open(private_json_path, "w+") as f:
+            with open(private_json_path, "w+", encoding="utf-8") as f:
                 f.write(json.dumps(data, indent=2))
 
         settings = self.get_settings()
@@ -192,7 +192,6 @@ class Api:
         # 重写project.private.config.json
         private_json = read_project_private_json(export_path)
         private_json["projectname"] = project.get("name", "")
-        private_json["description"] = project.get("description", "")
         private_json["description"] = project.get("description", "")
         private_json["appid"] = appid
         save_project_private_json(export_path, private_json)

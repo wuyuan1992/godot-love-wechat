@@ -50,6 +50,7 @@ export interface IExportSettings {
   exportPath: string;
   projectType: string;
   deviceOrientation: string;
+  appid: string;
 }
 
 const ProjectSettingDialog = (props: {
@@ -64,6 +65,7 @@ const ProjectSettingDialog = (props: {
     setValue("deviceOrientation", props.exportSettings.deviceOrientation);
     setValue("exportPath", props.exportSettings.exportPath);
     setValue("projectType", props.exportSettings.projectType);
+    setValue("appid", props.exportSettings.appid);
   }
   const onSubmit: SubmitHandler<IExportSettings> = (data) => {
     window.pywebview.api
@@ -145,6 +147,20 @@ const ProjectSettingDialog = (props: {
               ></FormField>
               <FormField
                 control={form.control}
+                name="appid"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>APPID</FormLabel>
+                    <FormControl>
+                      <div className="flex w-full items-center space-x-1">
+                        <Input placeholder="小游戏的APPID" {...field}></Input>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              ></FormField>
+              <FormField
+                control={form.control}
                 name="exportPath"
                 render={({ field }) => (
                   <FormItem>
@@ -208,7 +224,12 @@ const ProjectCard = (props: ProjectCardProps) => {
     if (exportSettings) {
       setLoading(true);
       window.pywebview.api
-        .export_game(props.path, exportSettings.exportPath)
+        .export_game(
+          props.path,
+          exportSettings.exportPath,
+          { name: props.name, description: props.description },
+          exportSettings.appid
+        )
         .then(() => {
           setLoading(false);
           toast({
