@@ -52,8 +52,8 @@ function App() {
     });
   };
   return (
-    <div className="w-full h-full bg-gray-100">
-      <nav className="flex items-center justify-between bg-white p-4 shadow-md">
+    <div className="w-full h-full bg-blend-soft-light">
+      <nav className="flex items-center justify-between bg-blend-soft-light p-4 shadow-md">
         <div className="logo">
           <img src={logo} alt="logo" className="h-12"></img>
         </div>
@@ -68,7 +68,7 @@ function App() {
           ></SettingsDialog>
         </div>
       </nav>
-      <div className="flex items-center justify-between p-4 bg-white shadow-md space-x-1">
+      <div className="m-4 flex items-center justify-between p-4 bg-blend-soft-light shadow-md space-x-1">
         <Button onClick={openProject}>导入</Button>
         <Input
           placeholder="搜索项目"

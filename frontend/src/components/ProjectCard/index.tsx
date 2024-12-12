@@ -250,7 +250,7 @@ const ProjectCard = (props: ProjectCardProps) => {
         <CardDescription>{props.description}</CardDescription>
         <CardDescription>Version:{props.version}</CardDescription>
         <CardContent className="mt-4">
-          <div className="flex justify-between">
+          <div className="flex justify-between space-x-1">
             {loading ? (
               <Button variant="outline" size="icon" disabled>
                 <Loader2 className="animate-spin" />

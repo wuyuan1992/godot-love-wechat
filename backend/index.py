@@ -136,7 +136,7 @@ class Api:
         project_path = pathlib.Path(project_path)
         return export_folder.relative_to(project_path).as_posix()
 
-    def export_game(self, project_path, export_path):
+    def export_game(self, project_path, export_path, project, appid):
         def exists(path):
             return os.path.exists(os.path.join(os.path.dirname(__file__), path))
 
@@ -164,6 +164,17 @@ class Api:
                 _game_json = json.loads(f.read())
             return _game_json
 
+        def read_project_private_json(path):
+            private_json_path = os.path.join(path, "project.private.config.json")
+            with open(private_json_path, "r") as f:
+                private_json = json.loads(f.read())
+            return private_json
+
+        def save_project_private_json(path, data):
+            private_json_path = os.path.join(path, "project.private.config.json")
+            with open(private_json_path, "w+") as f:
+                f.write(json.dumps(data, indent=2))
+
         settings = self.get_settings()
         godot_execute = settings["godotExecute"]
 
@@ -172,11 +183,19 @@ class Api:
         project_type = export_settings.get("projectType", "full")
         with zipfile.ZipFile(get_template_resource_path(project_type), "r") as zf:
             zf.extractall(export_path)
+        # 重写gamejson
         game_json = read_game_json(export_path)
         game_json["deviceOrientation"] = export_settings.get(
             "deviceOrientation", "portrait"
         )
         save_game_json(export_path, game_json)
+        # 重写project.private.config.json
+        private_json = read_project_private_json(export_path)
+        private_json["projectname"] = project.get("name", "")
+        private_json["description"] = project.get("description", "")
+        private_json["description"] = project.get("description", "")
+        private_json["appid"] = appid
+        save_project_private_json(export_path, private_json)
 
         # TODO: 分包处理？
         if export_settings.get("subPackages", ""):
