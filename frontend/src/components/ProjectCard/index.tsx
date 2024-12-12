@@ -29,8 +29,6 @@ import {
 } from "../ui/select";
 import { Select } from "../ui/select";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
 import { Separator } from "../ui/separator";
 import { ISettings } from "../SettingDIalog";
 import { useToast } from "@/hooks/use-toast";
@@ -172,10 +170,6 @@ const ProjectSettingDialog = (props: {
                   </FormItem>
                 )}
               ></FormField>
-              <div className="flex items-center space-x-4">
-                <Label>开启分包设置</Label>
-                <Switch></Switch>
-              </div>
               <Separator />
               <div className="w-full mt-6"></div>
               <DialogFooter>
@@ -242,7 +236,6 @@ const ProjectCard = (props: ProjectCardProps) => {
               size="icon"
               onClick={(event) => {
                 if (!props.settings?.godotExecute) {
-                  console.log(1);
                   toast({
                     variant: "destructive",
                     title: "导出失败",
