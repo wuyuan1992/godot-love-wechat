@@ -236,7 +236,7 @@ entry = get_entrypoint()
 
 if __name__ == "__main__":
     window = webview.create_window(
-        "pywebview-react boilerplate",
+        "Godot小游戏导出工具",
         entry,
         js_api=Api(),
         width=1024,
@@ -248,4 +248,4 @@ if __name__ == "__main__":
         "OPEN_EXTERNAL_LINKS_IN_BROWSER": True,
         "OPEN_DEVTOOLS_IN_DEBUG": True,
     }
-    webview.start(debug=True)
+    webview.start()
