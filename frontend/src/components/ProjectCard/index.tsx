@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
-import { Shuffle, Settings, Folder } from "lucide-react";
+import { Shuffle, Settings, Folder, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogFooter,
@@ -186,11 +186,31 @@ const ProjectSettingDialog = (props: {
 const ProjectCard = (props: ProjectCardProps) => {
   const { toast } = useToast();
   const [exportSettings, setExportSettings] = useState<IExportSettings>();
+  const [loading, setLoading] = useState(false);
   const exportGame = () => {
+    if (!props.settings?.godotExecute) {
+      toast({
+        variant: "destructive",
+        title: "导出失败",
+        description: "未设置Godot引擎启动路径, 去设置里设置",
+      });
+      return;
+    }
+    if (!exportSettings?.exportPath) {
+      console.log(exportSettings?.exportPath);
+      toast({
+        variant: "destructive",
+        title: "导出失败",
+        description: "未设置项目导出目录，去设置！",
+      });
+      return;
+    }
     if (exportSettings) {
+      setLoading(true);
       window.pywebview.api
         .export_game(props.path, exportSettings.exportPath)
         .then(() => {
+          setLoading(false);
           toast({
             variant: "default",
             title: "导出成功",
@@ -231,33 +251,23 @@ const ProjectCard = (props: ProjectCardProps) => {
         <CardDescription>Version:{props.version}</CardDescription>
         <CardContent className="mt-4">
           <div className="flex justify-between">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={(event) => {
-                if (!props.settings?.godotExecute) {
-                  toast({
-                    variant: "destructive",
-                    title: "导出失败",
-                    description: "未设置Godot引擎启动路径, 去设置里设置",
-                  });
-                  return;
-                }
-                if (!exportSettings?.exportPath) {
-                  console.log(exportSettings?.exportPath);
-                  toast({
-                    variant: "destructive",
-                    title: "导出失败",
-                    description: "未设置项目导出目录，去设置！",
-                  });
-                  return;
-                }
-                exportGame();
-                event.preventDefault();
-              }}
-            >
-              <Shuffle />
-            </Button>
+            {loading ? (
+              <Button variant="outline" size="icon" disabled>
+                <Loader2 className="animate-spin" />
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={(event) => {
+                  exportGame();
+                  event.preventDefault();
+                }}
+              >
+                <Shuffle />
+              </Button>
+            )}
+
             <ProjectSettingDialog
               exportSettings={exportSettings}
               projectPath={props.path}
