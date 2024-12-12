@@ -152,17 +152,19 @@ class Api:
         godot_execute = settings["godotExecute"]
 
         export_path = os.path.join(project_path, export_path)
-        if exists("../resources/minigame.full.zip"):
-            with zipfile.ZipFile("./resources/minigame.full.zip", "r") as zf:
+        export_settings = self.get_export_settings(project_path)
+        project_type = export_settings.get("projectType", "full")
+        if exists(f"../resources/minigame.{project_type}.zip"):
+            with zipfile.ZipFile(f"./resources/minigame.{project_type}.zip", "r") as zf:
                 zf.extractall(export_path)
-            settings = self.get_export_settings(project_path)
             game_json = read_game_json(export_path)
-            game_json["deviceOrientation"] = settings.get(
+            game_json["deviceOrientation"] = export_settings.get(
                 "deviceOrientation", "portrait"
             )
-            # TODO: 分包设置
             save_game_json(export_path, game_json)
-            if settings.get("subPackages", ""):
+
+            # TODO: 分包设置
+            if export_settings.get("subPackages", ""):
                 pass
             else:
                 pckPath = os.path.join(export_path, "engine/godot.zip")

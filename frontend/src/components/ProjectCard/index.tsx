@@ -20,7 +20,7 @@ import {
 } from "../ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   SelectContent,
   SelectItem,
@@ -33,6 +33,7 @@ import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { Separator } from "../ui/separator";
 import { ISettings } from "../SettingDIalog";
+import { useToast } from "@/hooks/use-toast";
 
 export interface IProject {
   name: string;
@@ -49,16 +50,23 @@ export interface ProjectCardProps extends IProject {
 
 export interface IExportSettings {
   exportPath: string;
+  projectType: string;
   deviceOrientation: string;
 }
 
 const ProjectSettingDialog = (props: {
   projectPath: string;
+  exportSettings: IExportSettings | undefined;
   setExport: (exportSettings: IExportSettings) => void;
 }) => {
   const form = useForm<IExportSettings>({});
   const { setValue } = form;
   const [open, setOpen] = useState(false);
+  if (props.exportSettings) {
+    setValue("deviceOrientation", props.exportSettings.deviceOrientation);
+    setValue("exportPath", props.exportSettings.exportPath);
+    setValue("projectType", props.exportSettings.projectType);
+  }
   const onSubmit: SubmitHandler<IExportSettings> = (data) => {
     window.pywebview.api
       .save_export_settings(props.projectPath, data)
@@ -106,6 +114,31 @@ const ProjectSettingDialog = (props: {
                         <SelectContent>
                           <SelectItem value="portrait">竖向</SelectItem>
                           <SelectItem value="landscape">横向</SelectItem>
+                        </SelectContent>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              ></FormField>
+              <FormField
+                control={form.control}
+                name="projectType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>项目类型</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择项目类型，2D还是全部，2d会比体积小一点"></SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectContent>
+                          <SelectItem value="2d">2D</SelectItem>
+                          <SelectItem value="full">全部</SelectItem>
                         </SelectContent>
                       </SelectContent>
                     </Select>
@@ -163,6 +196,27 @@ const ProjectCard = (props: ProjectCardProps) => {
       window.pywebview.api.export_game(props.path, exportSettings.exportPath);
     }
   };
+
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const getExportSettings = () => {
+      console.log(1);
+      window.pywebview.api.get_export_settings(props.path).then((value) => {
+        // @ts-expect-error this is python value
+        setExportSettings(value);
+      });
+    };
+    if (window.pywebview) {
+      getExportSettings();
+    } else {
+      window.addEventListener("pywebviewready", getExportSettings);
+    }
+    return () => {
+      window.removeEventListener("pywebviewready", getExportSettings);
+    };
+  }, [props.path]);
+
   return (
     <Card key={props.key}>
       <CardHeader className="flex items-center space-x-3">
@@ -180,6 +234,24 @@ const ProjectCard = (props: ProjectCardProps) => {
               variant="outline"
               size="icon"
               onClick={(event) => {
+                if (!props.settings?.godotExecute) {
+                  console.log(1);
+                  toast({
+                    variant: "destructive",
+                    title: "导出失败",
+                    description: "未设置Godot引擎启动路径, 去设置里设置",
+                  });
+                  return;
+                }
+                if (!exportSettings?.exportPath) {
+                  console.log(exportSettings?.exportPath);
+                  toast({
+                    variant: "destructive",
+                    title: "导出失败",
+                    description: "未设置项目导出目录，去设置！",
+                  });
+                  return;
+                }
                 exportGame();
                 event.preventDefault();
               }}
@@ -187,6 +259,7 @@ const ProjectCard = (props: ProjectCardProps) => {
               <Shuffle />
             </Button>
             <ProjectSettingDialog
+              exportSettings={exportSettings}
               projectPath={props.path}
               setExport={(exportSettings) => {
                 setExportSettings(exportSettings);
