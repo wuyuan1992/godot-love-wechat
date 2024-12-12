@@ -6,7 +6,7 @@ import { Input } from "./components/ui/input";
 import ProjectCard, { IProject } from "./components/ProjectCard";
 
 function App() {
-  const [, setSettings] = useState<ISettings>();
+  const [settings, setSettings] = useState<ISettings>();
   const [projects, setProjects] = useState();
   const [filterProjects, setFilterProjects] = useState<IProject[]>([]);
   const [, setSearch] = useState<string>();
@@ -101,6 +101,7 @@ function App() {
                 name={project.name}
                 description={project.description}
                 version={project.version}
+                settings={settings}
               ></ProjectCard>
             ))
           : []}

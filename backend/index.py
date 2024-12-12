@@ -1,5 +1,7 @@
 import os
 import threading
+import subprocess
+import zipfile
 import pathlib
 import re
 import json
@@ -62,6 +64,12 @@ class Api:
         with open(export_settings_path, "w+") as f:
             f.write(json.dumps(settings, indent=2))
 
+    def get_export_settings(self, projectPath):
+        export_settings_path = os.path.join(projectPath, "minigame.export.json")
+        with open(export_settings_path, "r") as f:
+            export_settings = json.loads(f.read())
+        return export_settings
+
     def get_godot_execute(self):
         filename = webview.active_window().create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
@@ -120,9 +128,56 @@ class Api:
         export_folder = webview.active_window().create_file_dialog(
             dialog_type=webview.FOLDER_DIALOG, directory="", allow_multiple=False
         )
+        print(project_path)
         export_folder = pathlib.Path(export_folder[0])
         project_path = pathlib.Path(project_path)
         return export_folder.relative_to(project_path).as_posix()
+
+    def export_game(self, project_path, export_path):
+        def exists(path):
+            return os.path.exists(os.path.join(os.path.dirname(__file__), path))
+
+        def save_game_json(path, game_json):
+            game_json_path = os.path.join(path, "game.json")
+            with open(game_json_path, "w+") as f:
+                f.write(json.dumps(game_json, indent=2))
+
+        def read_game_json(path):
+            game_json = os.path.join(path, "game.json")
+            with open(game_json, "r") as f:
+                _game_json = json.loads(f.read())
+            return _game_json
+
+        settings = self.get_settings()
+        godot_execute = settings["godotExecute"]
+
+        export_path = os.path.join(project_path, export_path)
+        if exists("../resources/minigame.full.zip"):
+            with zipfile.ZipFile("./resources/minigame.full.zip", "r") as zf:
+                zf.extractall(export_path)
+            settings = self.get_export_settings(project_path)
+            game_json = read_game_json(export_path)
+            game_json["deviceOrientation"] = settings.get(
+                "deviceOrientation", "portrait"
+            )
+            # TODO: 分包设置
+            save_game_json(export_path, game_json)
+            if settings.get("subPackages", ""):
+                pass
+            else:
+                pckPath = os.path.join(export_path, "engine/godot.zip")
+                result = subprocess.run(
+                    [
+                        godot_execute,
+                        "--headless",
+                        "--path",
+                        project_path,
+                        "--export-pack",
+                        "Web",
+                        pckPath,
+                    ]
+                )
+                print(result)
 
 
 def get_entrypoint():

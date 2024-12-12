@@ -4,6 +4,7 @@
 block_cipher = None
 added_files = [
     ('.\\gui', 'gui'),
+    ('.\\resources, 'resources')
 ]
 
 a = Analysis(['.\\backend\\index.py'],

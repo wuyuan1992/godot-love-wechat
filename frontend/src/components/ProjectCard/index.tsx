@@ -32,6 +32,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { Separator } from "../ui/separator";
+import { ISettings } from "../SettingDIalog";
 
 export interface IProject {
   name: string;
@@ -43,6 +44,7 @@ export interface IProject {
 
 export interface ProjectCardProps extends IProject {
   key: number;
+  settings: ISettings | undefined;
 }
 
 export interface IExportSettings {
@@ -50,7 +52,10 @@ export interface IExportSettings {
   deviceOrientation: string;
 }
 
-const ProjectSettingDialog = (props: { projectPath: string }) => {
+const ProjectSettingDialog = (props: {
+  projectPath: string;
+  setExport: (exportSettings: IExportSettings) => void;
+}) => {
   const form = useForm<IExportSettings>({});
   const { setValue } = form;
   const [open, setOpen] = useState(false);
@@ -59,6 +64,7 @@ const ProjectSettingDialog = (props: { projectPath: string }) => {
       .save_export_settings(props.projectPath, data)
       .then(() => {
         setOpen(false);
+        props.setExport(data);
       });
   };
   const getExportPath = () => {
@@ -151,6 +157,12 @@ const ProjectSettingDialog = (props: { projectPath: string }) => {
 };
 
 const ProjectCard = (props: ProjectCardProps) => {
+  const [exportSettings, setExportSettings] = useState<IExportSettings>();
+  const exportGame = () => {
+    if (exportSettings) {
+      window.pywebview.api.export_game(props.path, exportSettings.exportPath);
+    }
+  };
   return (
     <Card key={props.key}>
       <CardHeader className="flex items-center space-x-3">
@@ -164,11 +176,21 @@ const ProjectCard = (props: ProjectCardProps) => {
         <CardDescription>Version:{props.version}</CardDescription>
         <CardContent className="mt-4">
           <div className="flex justify-between">
-            <Button variant="outline" size="icon">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(event) => {
+                exportGame();
+                event.preventDefault();
+              }}
+            >
               <Shuffle />
             </Button>
             <ProjectSettingDialog
               projectPath={props.path}
+              setExport={(exportSettings) => {
+                setExportSettings(exportSettings);
+              }}
             ></ProjectSettingDialog>
           </div>
         </CardContent>
