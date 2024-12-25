@@ -1,14 +1,14 @@
 from nicegui import ui, app
 from app.layout import layout
 from app.settings import settings
+from app.project_list import project_list
 
 app.add_static_files("/assets", "assets")
 
 @ui.page("/")
 def index_page():
     with layout("home"):
-        with ui.column().classes("w-full"):
-            ui.label("content")
+        project_list()
 
 @ui.page("/settings")
 def settings_page():

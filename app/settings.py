@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from nicegui import ui, app
+from nicegui import ui, app, run
 from app.stroge import Storge
 import webview
 
@@ -17,8 +17,8 @@ def settings():
         setting_item.godot_execute = settings_data["godot_execute"]
         setting_item.wechat_execute = settings_data["wechat_execute"]
 
-    def save_settings():
-        storge.save("settings.json", {"godot_execute": setting_item.godot_execute, "wechat_execute": setting_item.wechat_execute })
+    async def save_settings():
+        await run.io_bound(storge.save, "settings.json", {"godot_execute": setting_item.godot_execute, "wechat_execute": setting_item.wechat_execute })
         ui.notify("保存成功！")
         
 

@@ -19,7 +19,7 @@ class Storge:
         path = os.path.join(self.path, file)
         if not os.path.exists(path):
             return
-        with open(path, "r") as f:
+        with open(path, "rb") as f:
             data = json.loads(f.read())
         return data
 
