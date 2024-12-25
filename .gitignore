@@ -1,8 +1,3 @@
-venv
-gui
-build
-dist
-settings.json
-projects.json
-.DS_Store
-node_modules
+__pycache__/
+*.py[cod]
+*$py.class
