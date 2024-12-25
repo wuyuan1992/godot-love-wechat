@@ -19,16 +19,19 @@ def settings():
 
     def save_settings():
         storge.save("settings.json", {"godot_execute": setting_item.godot_execute, "wechat_execute": setting_item.wechat_execute })
+        ui.notify("保存成功！")
         
 
     async def choose_godot():
         file_types = ('Godot Execute (*.exe)',)
         file = await app.native.main_window.create_file_dialog(dialog_type=webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types) # type: ignore
-        setting_item.godot_execute = file[0]
+        if file:
+            setting_item.godot_execute = file[0]
 
     async def choose_wechat():
         file = await app.native.main_window.create_file_dialog(dialog_type=webview.FOLDER_DIALOG, allow_multiple=False, file_types=()) # type: ignore
-        setting_item.wechat_execute = file[0]
+        if file:
+            setting_item.wechat_execute = file[0]
 
     with ui.column(align_items="start").classes("w-full p-2"):
         with ui.row().classes("border-b pb-2 w-full"):
