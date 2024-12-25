@@ -45,7 +45,7 @@ def project_card():
                     with ui.card_section():
                         ui.label(project["description"]).classes("text-caption")
                     with ui.card_actions():
-                        ui.button("转换", icon="swap_horiz").props("flat")
+                        ui.button("转换", icon="swap_horiz", on_click=lambda: ui.navigate.to(f"/projects/{project["id"]}")).props("flat")
                         ui.button("删除", icon="delete", on_click=lambda: project_manager.remove(project)).props("flat")
 
 
