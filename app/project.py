@@ -21,7 +21,7 @@ class ProjectsStorge:
 class ExportSettings:
     appid: str = field(default="")
     device_orientation: str = field(default="portrait")
-    export_teamplate: str = field(default="")
+    export_template: str = field(default="")
     export_path: str = field(default="")
 
     def read_project_export_settings(self, project_path: str):
@@ -29,6 +29,14 @@ class ExportSettings:
 
     def save(self, project_path: str):
         pass
+
+    def to_dict(self):
+        return {
+            "appid": self.appid,
+            "device_orientation": self.device_orientation,
+            "export_template": self.export_template,
+            "export_path": self.export_path
+        }
     
         
 
@@ -38,6 +46,16 @@ exporter = Exporter()
 
 
 def project_info(project):
+    async def on_click_export():
+        if not export_settings.export_path:
+            ui.notify("未填写导出目录", type="negative")
+            return
+        if not export_settings.export_template:
+            ui.notify("未选择导出模板", type="negative")
+            return
+        if not export_settings.appid:
+            ui.notify("未填写APPID", type="negative")
+            return
     with ui.row(align_items="center").classes("w-full"):
         with ui.column(align_items="center").classes("w-1/5"):
             ui.image(Image.open(project["icon"])).classes("w-32 h-32")
@@ -73,7 +91,7 @@ def export_config():
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出模板")
             ui.space()
-            ui.select(templates_options).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "export_teamplate")
+            ui.select(templates_options).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "export_template")
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出目录")
             ui.space()
