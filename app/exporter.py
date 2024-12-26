@@ -15,6 +15,8 @@ class Exporter:
 
     def get_export_settings(self, project: dict):
         p = os.path.join(project["path"], "minigame.export.jsonminigame.export.json")
+        if not os.path.exists(p):
+            return {}
         with open(p, "rb") as f:
             export_settings = json.loads(f.read())
             export_settings["export_path"] = os.path.join(project["path"], export_settings["export_path"])

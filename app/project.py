@@ -1,4 +1,4 @@
-from nicegui import ui, app
+from nicegui import run, ui, app
 import webview
 from app.stroge import Storge
 from app.exporter import Exporter
@@ -8,6 +8,7 @@ from PIL import Image
 @dataclass
 class ProjectsStorge:
     storge: Storge = field(default_factory=Storge)
+    export_loading: bool = False
 
     def get_project_by_id(self, id: str):
         projects = self.storge.get("projects.json")
@@ -24,12 +25,6 @@ class ExportSettings:
     export_template: str = field(default="")
     export_path: str = field(default="")
 
-    def read_project_export_settings(self, project_path: str):
-        pass
-
-    def save(self, project_path: str):
-        pass
-
     def to_dict(self):
         return {
             "appid": self.appid,
@@ -37,6 +32,11 @@ class ExportSettings:
             "export_template": self.export_template,
             "export_path": self.export_path
         }
+    def from_dict(self, settings: dict):
+        self.appid = settings["appid"]
+        self.device_orientation = settings["device_orientation"]
+        self.export_template = settings["export_template"]
+        self.export_path = settings["export_path"]
     
         
 
@@ -47,6 +47,8 @@ exporter = Exporter()
 
 def project_info(project):
     async def on_click_export():
+        export_button.disable()
+        export_button.props(add="add='loading'")
         if not export_settings.export_path:
             ui.notify("未填写导出目录", type="negative")
             return
@@ -56,6 +58,11 @@ def project_info(project):
         if not export_settings.appid:
             ui.notify("未填写APPID", type="negative")
             return
+        await run.io_bound(exporter.export_project, export_settings.to_dict(), project)
+        export_button.enable()
+        export_button.props(remove="add='loading'")
+        ui.notify("导出成功", type="negative")
+
     with ui.row(align_items="center").classes("w-full"):
         with ui.column(align_items="center").classes("w-1/5"):
             ui.image(Image.open(project["icon"])).classes("w-32 h-32")
@@ -66,17 +73,26 @@ def project_info(project):
 
         ui.space()
         with ui.column(align_items="start").classes("w-1/5 p-4"):
-            ui.button("导出", icon="import_export")
+            export_button = ui.button("导出",on_click=on_click_export, icon="import_export",)
+            export_button.add_slot('loading', '''
+                                   <q-spinner-facebook />
+                                   ''')
             ui.button("预览", icon="play_arrow")
-            ui.button("返回", icon="arrow_back").props("outline")
+            ui.button("返回", icon="arrow_back", on_click=lambda: ui.navigate.to("/")).props("outline")
 
-def export_config():
+def export_config(project):
+    templates = exporter.get_tempalte_json()
+    templates_options = {i["filename"]: i["name"] for i in templates}
+    project_export_settings = exporter.get_export_settings(project)
+
+    if project_export_settings:
+        export_settings.from_dict(project_export_settings)
+
     async def chosse_export_path():
         file = await app.native.main_window.create_file_dialog(dialog_type=webview.FOLDER_DIALOG, allow_multiple=False, file_types=()) # type: ignore
         if file:
             export_settings.export_path = file[0]
-    templates = exporter.get_tempalte_json()
-    templates_options = {i["filename"]: i["name"] for i in templates}
+
     with ui.row(align_items="start").classes("w-full border-b p-4"):
         ui.label("导出设置")
     with ui.column(align_items="start").classes("w-full p-4"):
@@ -108,4 +124,4 @@ def project(id: str):
         with ui.card(align_items="start").tight().classes("w-full"):
             project_info(project)
         with ui.card(align_items="start").tight().classes("w-full"):
-            export_config()
+            export_config(project)
