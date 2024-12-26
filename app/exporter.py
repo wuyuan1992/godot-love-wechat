@@ -23,12 +23,16 @@ class Exporter:
         return export_settings
 
     def export_project(self, export_settings: dict, project: dict):
-        with zipfile.ZipFile(f"./templates/{export_settings['export_template']}") as zf:
-            zf.extractall(export_settings["export_path"])
-        self.replace_gamejson(export_settings)
-        self.replace_privatejson(export_settings, project)
-        self.export_pck(export_settings)
-        self.save_export_settings(export_settings, project["path"])
+        exported = os.path.exists(os.path.join(export_settings["export_path"], "game.json"))
+        if exported:
+            self.export_pck(export_settings)
+        else:
+            with zipfile.ZipFile(f"./templates/{export_settings['export_template']}") as zf:
+                zf.extractall(export_settings["export_path"])
+            self.export_pck(export_settings)
+            self.replace_gamejson(export_settings)
+            self.replace_privatejson(export_settings, project)
+            self.save_export_settings(export_settings, project["path"])
 
     def replace_gamejson(self, export_settings: dict):
         path = os.path.join(export_settings["export_path"], "game.json")
