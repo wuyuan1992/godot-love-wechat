@@ -1,6 +1,7 @@
 from nicegui import ui, app
 import webview
 from app.stroge import Storge
+from app.exporter import Exporter
 from dataclasses import dataclass, field
 from PIL import Image
 
@@ -33,6 +34,7 @@ class ExportSettings:
 
 stroge = ProjectsStorge()
 export_settings = ExportSettings()
+exporter = Exporter()
 
 
 def project_info(project):
@@ -41,7 +43,7 @@ def project_info(project):
             ui.image(Image.open(project["icon"])).classes("w-32 h-32")
         with ui.column(align_items="baseline").classes("w-2/5 mt-2"):
             ui.label(project["name"]).classes("text-h6")
-            ui.label(f"version: {project["version"]}").classes("text-subtitle2")
+            ui.label(f"Version: {project["version"]}").classes("text-subtitle2")
             ui.label(project["description"]).classes("text-caption")
 
         ui.space()
@@ -55,6 +57,8 @@ def export_config():
         file = await app.native.main_window.create_file_dialog(dialog_type=webview.FOLDER_DIALOG, allow_multiple=False, file_types=()) # type: ignore
         if file:
             export_settings.export_path = file[0]
+    templates = exporter.get_tempalte_json()
+    templates_options = {i["filename"]: i["name"] for i in templates}
     with ui.row(align_items="start").classes("w-full border-b p-4"):
         ui.label("导出设置")
     with ui.column(align_items="start").classes("w-full p-4"):
@@ -67,9 +71,9 @@ def export_config():
             ui.space()
             ui.select({"portrait": "横向", "landscape": "竖向"}).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "device_orientation")
         with ui.row(align_items="center").classes("border-b w-full p-2"):
-            ui.label("项目模板")
+            ui.label("导出模板")
             ui.space()
-            ui.select({}).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "export_teamplate")
+            ui.select(templates_options).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "export_teamplate")
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出目录")
             ui.space()
