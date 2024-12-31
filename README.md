@@ -15,6 +15,13 @@
 - 关闭了Openxr
 - 关闭了javascript_eval: 本来小游戏就不让eval
 
+## RoadMap
+
+- [x] 分离导出模板与打包的
+- [x] 文件系统解决方案
+- [ ] pck文件brotil压缩与加载
+- [ ] 分包管理
+
 ## 支持系统
 
 - Windows 11 因为用了webview2的依赖
@@ -37,7 +44,6 @@
 
 ![](./pictures/tools1.png)
 
-
 设置godot引擎目录，和微信开发者工具的地址
 
 ![](./pictures/tools2.png)
@@ -54,35 +60,40 @@
 ### 微信开发者工具设置
 
 **重点！！！**，想要微信开发者工具预览小游戏你必须做以下设置
+
 1. 打开开发者工具目录中的`code\package.nw\package.json`并进行编辑,并在chromium-args添加--experimental-wasm-eh标志，并重启电脑！
-![](./pictures/package.json.png)
-   
+   ![](./pictures/package.json.png)
 2. 打开实验性wasm设置，新版本应该都打开了
-![](./pictures/wasm_exper.png)
+   ![](./pictures/wasm_exper.png)
 
 3. 导入导出的项目后在安全设置-安全设置中打开服务端口，这样你在导出工具里直接可以按预览按钮即可预览
-![](./pictures/wechat.png)
-![](./pictures/wechat2.png)
+   ![](./pictures/wechat.png)
+   ![](./pictures/wechat2.png)
 
 4. 在设置/通用设置中确保打开GPU加速
-![](./pictures/wechat3.png)
+   ![](./pictures/wechat3.png)
 
 5. 确保右边项目详情把这些都打开
-![](./pictures/wchat4.png)
+   ![](./pictures/wchat4.png)
 
 ## 常见问题
+
 1. 打开报错
+
 ```
-CompileError: WebAssembly.instantiate(): unexpected section (enable with --experimental-wasm-eh) 
+CompileError: WebAssembly.instantiate(): unexpected section (enable with --experimental-wasm-eh)
 @+58331(env: Windows,mg,1.06.2409140; lib: 3.6.6)
 ```
+
 参考上面的微信开发者工具设置，需要你修改下微信开发者工具，后面好像小游戏开发者工具自带
 
 2. 打开报错类似这样
+
 ```
 godot.js? [sm]:483 USER ERROR: Cannot get class 'SubViewportContainer'.
 godot.js:6883 USER SCRIPT ERROR: Parse Error: Could not find base class "RichTextLabel".
 ```
+
 精简版导出模板去除了高级gui，如果你项目使用了高级GUI,那么就会导致这样的错误，可以使用完整版模板导出，**注意，导出工具只有在第一次导出时会将整个模板导出，后续只会导出pck，所以如果发生这样的问题，请将导出目录下的所有文件删除，或者删除game.json**
 
 3. 如何调用微信的api工具？
