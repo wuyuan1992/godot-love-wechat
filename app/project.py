@@ -1,5 +1,6 @@
 from nicegui import run, ui, app
 import webview
+import os
 from app.stroge import Storge
 from app.exporter import Exporter
 from dataclasses import dataclass, field
@@ -48,7 +49,7 @@ exporter = Exporter()
 def project_info(project):
     async def on_click_export():
         export_button.disable()
-        export_button.props(add="add='loading'")
+        export_button.props(add="loading")
         if not export_settings.export_path:
             ui.notify("未填写导出目录", type="negative")
             return
@@ -60,8 +61,14 @@ def project_info(project):
             return
         await run.io_bound(exporter.export_project, export_settings.to_dict(), project)
         export_button.enable()
-        export_button.props(remove="add='loading'")
-        ui.notify("导出成功", type="negative")
+        export_button.props(remove="loading")
+        ui.notify("导出成功", type="positive")
+
+    async def preview_project():
+        if not os.path.exists(os.path.join(export_settings.export_path, "game.json")):
+            ui.notify("请先导出项目再预览", type="negative")
+        await run.io_bound(exporter.preview_project, export_settings.to_dict())
+
 
     with ui.row(align_items="center").classes("w-full"):
         with ui.column(align_items="center").classes("w-1/5"):
@@ -73,11 +80,11 @@ def project_info(project):
 
         ui.space()
         with ui.column(align_items="start").classes("w-1/5 p-4"):
-            export_button = ui.button("导出",on_click=on_click_export, icon="import_export",)
-            export_button.add_slot('loading', '''
+            with ui.button("导出",on_click=on_click_export, icon="import_export") as export_button:
+                export_button.add_slot('loading', '''
                                    <q-spinner-facebook />
                                    ''')
-            ui.button("预览", icon="play_arrow")
+            ui.button("预览", icon="play_arrow", on_click=preview_project)
             ui.button("返回", icon="arrow_back", on_click=lambda: ui.navigate.to("/")).props("outline")
 
 def export_config(project):
@@ -103,7 +110,7 @@ def export_config(project):
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("屏幕方向")
             ui.space()
-            ui.select({"portrait": "横向", "landscape": "竖向"}).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "device_orientation")
+            ui.select({"portrait": "竖向", "landscape": "横向"}).props("outlined outlined dense").classes("w-64").bind_value(export_settings, "device_orientation")
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出模板")
             ui.space()
