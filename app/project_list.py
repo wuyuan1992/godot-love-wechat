@@ -37,8 +37,9 @@ def project_card():
     with ui.grid(columns=3).classes("w-full p-4"):
         for project in project_manager.projects:
             if project["name"].startswith(project_manager.search):
+                icon = Image.open(project["icon"]) if not project["icon"].endswith(".svg") else "/assets/logo.svg"
                 with ui.card().tight():
-                    with ui.image(Image.open(project["icon"])):
+                    with ui.image(icon):
                         with ui.column().classes("w-full absolute-bottom"):
                             ui.label(project["name"]).classes("text-h6")
                             ui.label(f"Version: {project["version"]}").classes("text-subtitle2")
