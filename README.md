@@ -15,6 +15,8 @@
 - 关闭了Openxr
 - 关闭了javascript_eval: 本来小游戏就不让eval
 
+导出模板维护地址[https://github.com/yuchenyang1994/godot-minigame-template](https://github.com/yuchenyang1994/godot-minigame-template)
+
 ## RoadMap
 
 - [x] 分离导出模板与打包的
