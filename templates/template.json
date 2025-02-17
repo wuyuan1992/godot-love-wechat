@@ -1,14 +1,14 @@
 [
   {
     "name": "4.3微信小游戏2D精简版",
-    "filename": "minigame-tiny.2d.zip"
+    "filename": "minigame.2d.tiny.zip"
   },
   {
-    "name": "4.3微信小游戏3D精简版",
-    "filename": "minigame-tiny.full.zip"
+    "name": "4.3微信小游戏2D完整版",
+    "filename": "minigame.2d.full.zip"
   },
   {
     "name": "4.3微信小游戏3D完整版",
-    "filename": "minigame-large.full.zip"
+    "filename": "minigame.3d.full.zip"
   }
 ]
