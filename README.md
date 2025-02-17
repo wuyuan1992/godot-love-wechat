@@ -90,6 +90,26 @@ wasm的文件系统方案，godot在web平台的方案是使用indexedb，然后
 5. 确保右边项目详情把这些都打开
    ![](./pictures/wchat4.png)
 
+### 文件系统同步
+
+用户文件下的会定时每5秒同步到微信小游戏的文件系统，并在游戏开始前将本地文件复制到内存文件系统中，如果你在游戏中有保存文件的情况请使用API来强制同步一下确保文件落盘。
+JavaScript 依赖于垃圾回收，而 Godot 使用引用计数进行内存管理。这意味着你必须显式创建回调（它们本身作为 JavaScriptObjects 返回）并且必须保留它们的引用
+
+```gdscript
+var sdk = JavaScriptBridge.get_interface("GodotSdk")
+var _on_sucess = JavaScriptBridge.create_callback(on_sync_sucess)
+var _on_error = JavaScriptBridge.create_callback(on_sync_error)
+
+func _ready():
+    sdk.syncfs(_on_sucess, _on_error)
+
+func on_sync_sucess():
+    # 成功回调
+
+func on_sync_error(error):
+    # 失败回调
+```
+
 ## 常见问题
 
 1. 打开报错
@@ -99,7 +119,7 @@ wasm的文件系统方案，godot在web平台的方案是使用indexedb，然后
    @+58331(env: Windows,mg,1.06.2409140; lib: 3.6.6)
    ```
 
-   参考上面的微信开发者工具设置，需要你修改下微信开发者工具，后面好像小游戏开发者工具自带
+参考上面的微信开发者工具设置，需要你修改下微信开发者工具，后面好像小游戏开发者工具自带
 
 2. 打开报错类似这样
 
