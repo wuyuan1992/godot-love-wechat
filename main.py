@@ -5,7 +5,7 @@ from app.project_list import project_list
 from pathlib import Path
 from app.project import project
 
-static_folder = Path(__file__).parent / 'assets'
+static_folder = Path(__file__).parent / "assets"
 
 app.add_static_files("/assets", str(static_folder))
 
@@ -33,5 +33,5 @@ ui.run(
     title="Godot Love Wechat",
     window_size=(1024, 768),
     native=True,
-    reload=False,
+    reload=True,
 )
