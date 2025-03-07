@@ -5,10 +5,10 @@ from nicegui.elements.dialog import Dialog
 from nicegui.elements.tree import Tree
 import webview
 import os
-from app import utils
+from app import gdscripts, utils
 from app.stroge import Storge
 from app.exporter import Exporter
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from PIL import Image
 
 
@@ -24,6 +24,11 @@ class ProjectsStorge:
         for project in projects:
             if project["id"] == id:
                 return project
+
+    def get_get_execute(self):
+        settings = self.storge.get("settings.json")
+        if settings:
+            return settings.get("godot_execute")
 
 
 @dataclass
@@ -114,6 +119,11 @@ def export_config(project):
     templates = exporter.get_tempalte_json()
     templates_options = {i["filename"]: i["name"] for i in templates}
     project_export_settings = exporter.get_export_settings(project)
+    export_presets = gdscripts.get_export_presets(
+        stroge.get_get_execute(), project["path"]  # pyright: ignore
+    )
+    if not export_presets:
+        ui.notify("未能找到导出预设，请设置", type="negative")
 
     if project_export_settings:
         export_settings.from_dict(project_export_settings)
@@ -141,9 +151,9 @@ def export_config(project):
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出预设")
             ui.space()
-            ui.select({"portrait": "竖向", "landscape": "横向"}).props(
-                "outlined outlined dense"
-            ).classes("w-64").bind_value(export_settings, "device_orientation")
+            ui.select(export_presets).props("outlined outlined dense").classes(
+                "w-64"
+            ).bind_value(export_settings, "export_perset")
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出模板")
             ui.space()
