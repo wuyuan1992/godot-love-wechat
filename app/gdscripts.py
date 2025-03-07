@@ -35,7 +35,7 @@ def set_export_presets(
 ):
     abs = Path().resolve().resolve()
     script_path = abs.joinpath("gdscripts/set_preset.gd")
-    if config_index:
+    if config_index is None:
         result = subprocess.run(
             [
                 godot_execute,
@@ -47,7 +47,6 @@ def set_export_presets(
                 script_path.as_posix(),
                 "--",
                 preset,
-                str(config_index),
             ],
             capture_output=True,
             text=True,
@@ -66,6 +65,7 @@ def set_export_presets(
                 script_path.as_posix(),
                 "--",
                 preset,
+                str(config_index),
             ],
             capture_output=True,
             text=True,

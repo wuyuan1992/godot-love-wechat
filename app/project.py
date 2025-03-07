@@ -203,7 +203,10 @@ def subpacks_ui(modal: Dialog, tree: Tree):
         export_settings.subpack_config.pop(i)
         subpacks_ui.refresh()
 
-    def on_edit(task):
+    def on_edit(i):
+        subpack_cfg.clear()
+        tree.untick()
+        task = export_settings.subpack_config[i]
         subpack_cfg.name = task["name"]
         subpack_cfg.subpack_type = task["subpack_type"]
         subpack_cfg.subpack_resource = task["subpack_resource"]
@@ -216,7 +219,7 @@ def subpacks_ui(modal: Dialog, tree: Tree):
                 ui.label(task["name"])
                 ui.badge(subpack_type[task["subpack_type"]])
                 ui.space()
-                ui.button("修改", on_click=lambda: on_edit(task)).props("flat")
+                ui.button("修改", on_click=lambda i=i: on_edit(i)).props("flat")
                 ui.button(on_click=lambda: on_delete(i), icon="delete").props(
                     "flat fab-mini color=grey"
                 )
@@ -255,7 +258,6 @@ def subpack_config(project):
         subpack_cfg.clear()
         subpacks_ui.refresh()
         modal.close()
-        print(json.dumps(export_settings.subpack_config))
 
     with modal:
         with ui.card().classes("w-full"):

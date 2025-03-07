@@ -140,6 +140,7 @@ class Exporter:
         godot_execute: str,
     ):
         for i, pack in enumerate(subpacks):
+            print(i)
             gdscripts.set_export_presets(
                 godot_execute, project_path, export_settings["export_perset"], i
             )
@@ -150,6 +151,6 @@ class Exporter:
                 self.export_pck(project_path, export_settings, pckPath)
             if pack["subpack_type"] == "inner_subpack":
                 pckPath = os.path.join(
-                    export_settings["export_path"], "subpacks\\godot.zip"
+                    export_settings["export_path"], f"subpacks\\{pack['name']}.zip"
                 )
                 self.export_pck(project_path, export_settings, pckPath)
