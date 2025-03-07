@@ -28,3 +28,29 @@ def get_export_presets(godot_execute: str, project_path: str):
         return json.loads(json_str)
     else:
         return []
+
+
+def set_export_presets(
+    godot_execute: str, project_path: str, preset: str, config_index: int
+):
+    abs = Path().resolve().resolve()
+    script_path = abs.joinpath("gdscripts/set_preset.gd")
+
+    result = subprocess.run(
+        [
+            godot_execute,
+            "--headless",
+            "--path",
+            project_path,
+            "-d",
+            "--script",
+            script_path.as_posix(),
+            "--",
+            preset,
+            str(config_index),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    output = result.stdout
+    return output
