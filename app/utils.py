@@ -51,22 +51,39 @@ def build_tree_dict(
     excludes: List[str] = [".import", ".uid", ".escn", ".godot"],
     depth: int = 0,
     max_depth: int = 10,
+    base_path: Union[str, Path] | None = None,
 ) -> Dict | None:
     path = Path(root_path)
+
+    if base_path is None:
+        base_path = path
+
     _, extension = os.path.splitext(path.name)
-    if path.name in ["export_presets.cfg"]:
+
+    if path.name in ["export_presets.cfg", "minigame.export.json"]:
         return None
     if extension in excludes:
         return None
 
-    node = {"id": path.name, "icon": "folder" if path.is_dir() else "description"}
+    relative_path = (
+        f"res://{path.relative_to(base_path).as_posix()}"
+        if path != base_path
+        else "res://"
+    )
+    node = {
+        "id": relative_path,
+        "icon": "folder" if path.is_dir() else "description",
+        "label": path.name,
+    }
 
     if path.is_dir() and depth < max_depth:
         children = []
         for child in sorted(os.listdir(path)):
             if child in excludes:
                 continue
-            child_node = build_tree_dict(path / child, excludes, depth + 1, max_depth)
+            child_node = build_tree_dict(
+                path / child, excludes, depth + 1, max_depth, base_path
+            )
             if child_node:
                 children.append(child_node)
         if children:

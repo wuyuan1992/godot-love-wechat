@@ -1,5 +1,6 @@
 from pathlib import Path
-from nicegui import classes, run, ui, app
+from typing import List
+from nicegui import run, ui, app
 import webview
 import os
 from app import utils
@@ -29,6 +30,7 @@ class ExportSettings:
     device_orientation: str = field(default="portrait")
     export_template: str = field(default="")
     export_path: str = field(default="")
+    subpack_config: List[dict] = field(default_factory=list)
 
     def to_dict(self):
         return {
@@ -36,6 +38,7 @@ class ExportSettings:
             "device_orientation": self.device_orientation,
             "export_template": self.export_template,
             "export_path": self.export_path,
+            "subpack_config": self.subpack_config,
         }
 
     def from_dict(self, settings: dict):
@@ -43,6 +46,7 @@ class ExportSettings:
         self.device_orientation = settings["device_orientation"]
         self.export_template = settings["export_template"]
         self.export_path = settings["export_path"]
+        self.subpack_config = settings.get("subpack_config", [])
 
 
 stroge = ProjectsStorge()
@@ -152,11 +156,51 @@ def export_config(project):
                 )
 
 
+@dataclass
+class SubpackConfig:
+    subpack_resource: List[str] = field(default_factory=lambda: [])
+    subpack_type: str = field(default="")
+    name: str = field(default="")
+
+    def clear(self):
+        self.subpack_resource = []
+        self.subpack_type = ""
+        self.name = ""
+
+
+subpacks = []
+
+
 def subpack_config(project):
     project_path = Path(project["path"]).resolve()
     file_tree = utils.build_tree_dict(project_path)
-    print(file_tree)
+    subpack_cfg = SubpackConfig()
     modal = ui.dialog()
+
+    def on_tick(e):
+        subpack_cfg.subpack_resource = e.value
+
+    def on_add_pck():
+        if subpack_cfg.name == "":
+            ui.notify("未填写包名", type="negative")
+            return
+        if subpack_cfg.subpack_type == "":
+            ui.notify("未填写包类型", type="negative")
+            return
+        if len(subpack_cfg.subpack_resource):
+            ui.notify("未选择资源", type="negative")
+            return
+        subpacks.append(
+            {
+                "name": subpack_cfg.name,
+                "subpack_type": subpack_cfg.subpack_type,
+                "subpack_resource": subpack_cfg.subpack_resource.copy(),
+            }
+        )
+        file_tree.untick()  # pyright: ignore
+        subpack_cfg.clear()
+        modal.close()
+
     with ui.row(align_items="center").classes("w-full border-b p-4 justify-between"):
         ui.label("分包配置")
         ui.button("新增分包", on_click=modal.open)
@@ -164,12 +208,34 @@ def subpack_config(project):
     with modal:
         with ui.card().classes("w-full"):
             with ui.row(align_items="start").classes("w-full h-96"):
-                with ui.column().classes("w-full h-full overflow-auto"):
-                    ui.tree(
-                        [file_tree],
-                        label_key="id",
-                        tick_strategy="leaf",  ## pyright: ignore
-                    ).expand()
+                with ui.column().classes("h-full overflow-auto"):
+                    file_tree = (
+                        ui.tree(
+                            [file_tree],  ## pyright: ignore
+                            label_key="label",
+                            tick_strategy="leaf",
+                        )
+                        .expand()
+                        .on_tick(on_tick)
+                    )
+                with ui.column().classes("h-full"):
+                    ui.input("名称").props("outlined").classes("w-full").bind_value(
+                        subpack_cfg, "name"
+                    )
+                    ui.select(
+                        {
+                            "main": "主包",
+                            "inner_subpack": "内分包",
+                            "cdn_subpack": "CDN分包",
+                        },
+                        label="分包类型",
+                    ).props("outlined").classes("w-full").bind_value(
+                        subpack_cfg, "subpack_type"
+                    )
+            with ui.row(align_items="end").classes("w-full"):
+                ui.space()
+                ui.button("添加").on_click(on_add_pck)
+                ui.button("取消").on_click(lambda: modal.close())
 
 
 def project(id: str):
