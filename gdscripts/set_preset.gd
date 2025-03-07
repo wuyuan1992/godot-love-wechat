@@ -15,7 +15,8 @@ func _init() -> void:
 				var _name = config.get_value(section, "name", "")
 				if name == _name:
 					config.set_value(section, "export_filter", "all_resources")
-					config.erase_section_key(section, "export_files")
+					if config.get_value(section, "export_files", ""):
+						config.erase_section_key(section, "export_files")
 					config.save("res://export_presets.cfg")
 					quit()
 					return

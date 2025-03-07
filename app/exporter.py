@@ -1,6 +1,8 @@
 import json
 import os
+from typing import List
 import zipfile
+from app import gdscripts
 from app.stroge import Storge
 from pathlib import Path
 import subprocess
@@ -31,16 +33,54 @@ class Exporter:
             os.path.join(export_settings["export_path"], "game.json")
         )
         self.save_export_settings(export_settings, project["path"])
-        if exported:
-            self.export_pck(project["path"], export_settings)
+        settings = self.storage.get("settings.json")
+
+        if exported and settings:
+            if export_settings["subpack_config"]:
+                self.export_subpack(
+                    export_settings["subpack_config"],
+                    export_settings,
+                    project["path"],
+                    settings["godot_execute"],
+                )
+            else:
+                gdscripts.set_export_presets(
+                    settings["godot_execute"],
+                    project["path"],
+                    export_settings["export_perset"],
+                    config_index=None,
+                )
+                pckPath = os.path.join(
+                    export_settings["export_path"], "engine\\godot.zip"
+                )
+                self.export_pck(project["path"], export_settings, pckPath)
         else:
             with zipfile.ZipFile(
                 f"./templates/{export_settings['export_template']}"
             ) as zf:
                 zf.extractall(export_settings["export_path"])
-            self.export_pck(project["path"], export_settings)
+
+            pckPath = os.path.join(export_settings["export_path"], "engine\\godot.zip")
             self.replace_gamejson(export_settings)
             self.replace_privatejson(project, export_settings)
+            if export_settings["subpack_config"]:
+                self.export_subpack(
+                    export_settings["subpack_config"],
+                    export_settings,
+                    project["path"],
+                    settings["godot_execute"],  # pyright: ignore
+                )
+            else:
+                gdscripts.set_export_presets(
+                    settings["godot_execute"],  # pyright: ignore
+                    project["path"],
+                    export_settings["export_perset"],
+                    config_index=None,
+                )
+                pckPath = os.path.join(
+                    export_settings["export_path"], "engine\\godot.zip"
+                )
+                self.export_pck(project["path"], export_settings, pckPath)
 
     def replace_gamejson(self, export_settings: dict):
         path = os.path.join(export_settings["export_path"], "game.json")
@@ -70,8 +110,7 @@ class Exporter:
         with open(projectpath.joinpath("minigame.export.json"), "w+") as f:
             f.write(json.dumps(export_settings, indent=2))
 
-    def export_pck(self, project_path: str, export_settings: dict):
-        pckPath = os.path.join(export_settings["export_path"], "engine\\godot.zip")
+    def export_pck(self, project_path: str, export_settings: dict, packPath: str):
         settings = self.storage.get("settings.json")
         if settings:
             godot_execute = settings["godot_execute"]
@@ -83,7 +122,7 @@ class Exporter:
                     project_path,
                     "--export-pack",
                     "Web",
-                    pckPath,
+                    packPath,
                 ]
             )
             print(result)
@@ -95,3 +134,25 @@ class Exporter:
             wechat_execute = os.path.join(settings["wechat_execute"], "cli.bat")
             result = subprocess.run([wechat_execute, "open", "--project", export_path])
             print(result)
+
+    def export_subpack(
+        self,
+        subpacks: List[dict],
+        export_settings: dict,
+        project_path: str,
+        godot_execute: str,
+    ):
+        for i, pack in enumerate(subpacks):
+            gdscripts.set_export_presets(
+                godot_execute, project_path, export_settings["export_perset"], i
+            )
+            if pack["subpack_type"] == "main":
+                pckPath = os.path.join(
+                    export_settings["export_path"], "engine\\godot.zip"
+                )
+                self.export_pck(project_path, export_settings, pckPath)
+            if pack["subpack_type"] == "inner_subpack":
+                pckPath = os.path.join(
+                    export_settings["export_path"], "subpacks\\godot.zip"
+                )
+                self.export_pck(project_path, export_settings, pckPath)
