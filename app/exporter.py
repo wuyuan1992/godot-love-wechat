@@ -103,10 +103,7 @@ class Exporter:
             f.write(json.dumps(privatejson, indent=2))
 
     def save_export_settings(self, export_settings: dict, project_path: str):
-        export_path = Path(export_settings["export_path"])
         projectpath = Path(project_path)
-        relative_export_path = export_path.relative_to(projectpath).as_posix()
-        export_settings["export_path"] = relative_export_path
         with open(projectpath.joinpath("minigame.export.json"), "w+") as f:
             f.write(json.dumps(export_settings, indent=2))
 
@@ -121,7 +118,7 @@ class Exporter:
                     "--path",
                     project_path,
                     "--export-pack",
-                    "Web",
+                    export_settings["export_perset"],
                     packPath,
                 ]
             )
