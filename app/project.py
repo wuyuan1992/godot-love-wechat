@@ -32,6 +32,7 @@ class ExportSettings:
     device_orientation: str = field(default="portrait")
     export_template: str = field(default="")
     export_path: str = field(default="")
+    export_perset: str = field(default="")
     subpack_config: List[dict] = field(default_factory=list)
 
     def to_dict(self):
@@ -40,6 +41,7 @@ class ExportSettings:
             "device_orientation": self.device_orientation,
             "export_template": self.export_template,
             "export_path": self.export_path,
+            "export_perset": self.export_perset,
             "subpack_config": self.subpack_config,
         }
 
@@ -48,13 +50,13 @@ class ExportSettings:
         self.device_orientation = settings["device_orientation"]
         self.export_template = settings["export_template"]
         self.export_path = settings["export_path"]
+        self.export_perset = settings.get("export_perset", "")
         self.subpack_config = settings.get("subpack_config", [])
 
 
 stroge = ProjectsStorge()
 export_settings = ExportSettings()
 exporter = Exporter()
-subpacks = []
 
 
 def project_info(project):
@@ -69,6 +71,9 @@ def project_info(project):
             return
         if not export_settings.appid:
             ui.notify("未填写APPID", type="negative")
+            return
+        if not export_settings.export_perset:
+            ui.notify("未填写导出预设", type="negative")
             return
         await run.io_bound(exporter.export_project, export_settings.to_dict(), project)
         export_button.enable()
@@ -184,7 +189,7 @@ subpack_cfg = SubpackConfig()
 @ui.refreshable
 def subpacks_ui(modal: Dialog, tree: Tree):
     def on_delete(i):
-        subpacks.pop(i)
+        export_settings.subpack_config.pop(i)
         subpacks_ui.refresh()
 
     def on_edit(task):
@@ -195,7 +200,7 @@ def subpacks_ui(modal: Dialog, tree: Tree):
         modal.open()
 
     with ui.column(align_items="start").classes("w-full p-4"):
-        for i, task in enumerate(subpacks):
+        for i, task in enumerate(export_settings.subpack_config):
             with ui.row(align_items="center").classes("border-b w-full p-2"):
                 ui.label(task["name"])
                 ui.badge(subpack_type[task["subpack_type"]])
@@ -230,11 +235,11 @@ def subpack_config(project):
             "subpack_resource": subpack_cfg.subpack_resource.copy(),
         }
 
-        for i, pack in enumerate(subpacks):
+        for i, pack in enumerate(export_settings.subpack_config):
             if pack["name"] == subpack_cfg.name:
-                subpacks[i] = new_pack
-        if subpack_cfg.name not in [i["name"] for i in subpacks]:
-            subpacks.append(new_pack)
+                export_settings.subpack_config[i] = new_pack
+        if subpack_cfg.name not in [i["name"] for i in export_settings.subpack_config]:
+            export_settings.subpack_config.append(new_pack)
         tree.untick()  # pyright: ignore
         subpack_cfg.clear()
         subpacks_ui.refresh()
