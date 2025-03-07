@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import List
 from nicegui import run, ui, app
+from nicegui.elements.dialog import Dialog
+from nicegui.elements.tree import Tree
 import webview
 import os
 from app import utils
@@ -176,11 +178,21 @@ subpack_type = {
 }
 
 
+subpack_cfg = SubpackConfig()
+
+
 @ui.refreshable
-def subpacks_ui():
+def subpacks_ui(modal: Dialog, tree: Tree):
     def on_delete(i):
         subpacks.pop(i)
         subpacks_ui.refresh()
+
+    def on_edit(task):
+        subpack_cfg.name = task["name"]
+        subpack_cfg.subpack_type = task["subpack_type"]
+        subpack_cfg.subpack_resource = task["subpack_resource"]
+        tree.tick(task["subpack_resource"])
+        modal.open()
 
     with ui.column(align_items="start").classes("w-full p-4"):
         for i, task in enumerate(subpacks):
@@ -188,7 +200,7 @@ def subpacks_ui():
                 ui.label(task["name"])
                 ui.badge(subpack_type[task["subpack_type"]])
                 ui.space()
-                ui.button("修改").props("flat")
+                ui.button("修改", on_click=lambda: on_edit(task)).props("flat")
                 ui.button(on_click=lambda: on_delete(i), icon="delete").props(
                     "flat fab-mini color=grey"
                 )
@@ -197,7 +209,6 @@ def subpacks_ui():
 def subpack_config(project):
     project_path = Path(project["path"]).resolve()
     file_tree = utils.build_tree_dict(project_path)
-    subpack_cfg = SubpackConfig()
     modal = ui.dialog()
 
     def on_tick(e):
@@ -213,29 +224,27 @@ def subpack_config(project):
         if len(subpack_cfg.subpack_resource) == 0:
             ui.notify("未选择资源", type="negative")
             return
-        subpacks.append(
-            {
-                "name": subpack_cfg.name,
-                "subpack_type": subpack_cfg.subpack_type,
-                "subpack_resource": subpack_cfg.subpack_resource.copy(),
-            }
-        )
-        file_tree.untick()  # pyright: ignore
+        new_pack = {
+            "name": subpack_cfg.name,
+            "subpack_type": subpack_cfg.subpack_type,
+            "subpack_resource": subpack_cfg.subpack_resource.copy(),
+        }
+
+        for i, pack in enumerate(subpacks):
+            if pack["name"] == subpack_cfg.name:
+                subpacks[i] = new_pack
+        if subpack_cfg.name not in [i["name"] for i in subpacks]:
+            subpacks.append(new_pack)
+        tree.untick()  # pyright: ignore
         subpack_cfg.clear()
         subpacks_ui.refresh()
         modal.close()
-
-    with ui.row(align_items="center").classes("w-full border-b p-4 justify-between"):
-        ui.label("分包配置")
-        ui.button("新增分包", on_click=modal.open)
-
-    subpacks_ui()
 
     with modal:
         with ui.card().classes("w-full"):
             with ui.row(align_items="start").classes("w-full h-96"):
                 with ui.column().classes("h-full overflow-auto"):
-                    file_tree = (
+                    tree = (
                         ui.tree(
                             [file_tree],  ## pyright: ignore
                             label_key="label",
@@ -253,8 +262,14 @@ def subpack_config(project):
                     ).bind_value(subpack_cfg, "subpack_type")
             with ui.row(align_items="end").classes("w-full"):
                 ui.space()
-                ui.button("添加").on_click(on_add_pck)
+                ui.button("确定").on_click(on_add_pck)
                 ui.button("取消").on_click(lambda: modal.close())
+
+    with ui.row(align_items="center").classes("w-full border-b p-4 justify-between"):
+        ui.label("分包配置")
+        ui.button("新增分包", on_click=modal.open)
+
+    subpacks_ui(modal, tree)  # pyright: ignore
 
 
 def project(id: str):
