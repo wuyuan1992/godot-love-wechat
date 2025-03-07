@@ -40,6 +40,7 @@ class ExportSettings:
     export_path: str = field(default="")
     export_perset: str = field(default="")
     subpack_config: List[dict] = field(default_factory=list)
+    cdn_bucket: str = field(default="")
 
     def to_dict(self):
         return {
@@ -49,6 +50,7 @@ class ExportSettings:
             "export_path": self.export_path,
             "export_perset": self.export_perset,
             "subpack_config": self.subpack_config,
+            "cdn_bucket": self.cdn_bucket,
         }
 
     def from_dict(self, settings: dict):
@@ -58,6 +60,7 @@ class ExportSettings:
         self.export_path = settings["export_path"]
         self.export_perset = settings.get("export_perset", "")
         self.subpack_config = settings.get("subpack_config", [])
+        self.cdn_bucket = settings.get("cdn_bucket", "")
 
 
 stroge = ProjectsStorge()
@@ -69,6 +72,11 @@ def project_info(project):
     async def on_click_export():
         export_button.disable()
         export_button.props(add="loading")
+        subpack_types = [i["subpack_type"] for i in export_settings.subpack_config]
+        settings = stroge.storge.get("settings.json")
+        if not settings:
+            ui.notify("没有进行设置，无法导出！", type="negative")
+            return
         if not export_settings.export_path:
             ui.notify("未填写导出目录", type="negative")
             return
@@ -81,6 +89,26 @@ def project_info(project):
         if not export_settings.export_perset:
             ui.notify("未填写导出预设", type="negative")
             return
+        if "cdn_subpack" in subpack_types and export_settings.cdn_bucket == "":
+            ui.notify("包含CDN包，但未填写CDN的Bucket")
+            return
+        if "cdn_subpack" in subpack_types:
+            if not settings.get("cdn_endpoint"):
+                ui.notify("包含CDN包，但未设置CDN的Endpoint", type="negative")
+                return
+
+            if not settings.get("cdn_access_key_id"):
+                ui.notify("包含CDN包，但未设置CDN的Access Key ID", type="negative")
+                return
+
+            if not settings.get("cdn_secret_access_key"):
+                ui.notify("包含CDN包，但未设置CDN的Secret Access_key", type="negative")
+                return
+
+            if not settings.get("cdn_session_token"):
+                ui.notify("包含CDN包, 但未设置Session Token", type="negative")
+                return
+
         await run.io_bound(exporter.export_project, export_settings.to_dict(), project)
         export_button.enable()
         export_button.props(remove="loading")
@@ -161,6 +189,14 @@ def export_config(project):
             ui.select(templates_options).props("outlined outlined dense").classes(
                 "w-64"
             ).bind_value(export_settings, "export_template")
+
+        with ui.row(align_items="center").classes("border-b w-full p-2"):
+            ui.label("CDN Bucket")
+            ui.space()
+            ui.input().props("outlined outlined dense").classes("w-64").bind_value(
+                export_settings, "cdn_bucket"
+            )
+
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出目录")
             ui.space()
@@ -180,11 +216,13 @@ class SubpackConfig:
     subpack_resource: List[str] = field(default_factory=lambda: [])
     subpack_type: str = field(default="")
     name: str = field(default="")
+    cdn_path: str = field(default="")
 
     def clear(self):
         self.subpack_resource = []
         self.subpack_type = ""
         self.name = ""
+        self.cdn_path = ""
 
 
 subpack_type = {
@@ -218,6 +256,8 @@ def subpacks_ui(modal: Dialog, tree: Tree):
             with ui.row(align_items="center").classes("border-b w-full p-2"):
                 ui.label(task["name"])
                 ui.badge(subpack_type[task["subpack_type"]])
+                if task["cdn_path"]:
+                    ui.label(f"CDN目录：{task["cdn_path"]}")
                 ui.space()
                 ui.button("修改", on_click=lambda i=i: on_edit(i)).props("flat")
                 ui.button(on_click=lambda: on_delete(i), icon="delete").props(
@@ -243,6 +283,10 @@ def subpack_config(project):
         if len(subpack_cfg.subpack_resource) == 0:
             ui.notify("未选择资源", type="negative")
             return
+        if subpack_cfg.subpack_type == "cdn_subpack" and subpack_cfg.cdn_path == "":
+            ui.notify("CDN包请填写上传地址", type="negative")
+            return
+
         new_pack = {
             "name": subpack_cfg.name,
             "subpack_type": subpack_cfg.subpack_type,
@@ -279,6 +323,11 @@ def subpack_config(project):
                     ui.select(subpack_type).props("outlined").classes(
                         "w-full"
                     ).bind_value(subpack_cfg, "subpack_type")
+                with ui.column().classes("h-full"):
+                    ui.input(
+                        "CDN上传目录",
+                        placeholder="上传到CDN的目录，后续根据你的地址下载，非CDN的包可以不填写",
+                    ).bind_value(subpack_cfg, "cdn_path")
             with ui.row(align_items="end").classes("w-full"):
                 ui.space()
                 ui.button("确定").on_click(on_add_pck)

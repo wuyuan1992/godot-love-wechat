@@ -4,6 +4,8 @@ from typing import List
 import zipfile
 from app import gdscripts
 from app.stroge import Storge
+import boto3
+from botocore.config import Config
 from pathlib import Path
 import subprocess
 
@@ -139,18 +141,37 @@ class Exporter:
         project_path: str,
         godot_execute: str,
     ):
-        for i, pack in enumerate(subpacks):
-            print(i)
-            gdscripts.set_export_presets(
-                godot_execute, project_path, export_settings["export_perset"], i
+        localpath = Path().absolute().resolve().as_posix()
+        settings = self.storage.get("settings.json")
+        if settings:
+            s3client = boto3.client(
+                "s3",
+                aws_access_key_id=settings["cdn_access_key_id"],
+                aws_secret_access_key=settings["cdn_secret_access_key"],
+                aws_session_token=settings["cdn_session_token"],
+                endpoint_url=settings["cdn_endpoint"],
+                config=Config(
+                    s3={"addressing_style": "virtual"}, signature_version="v4"
+                ),
             )
-            if pack["subpack_type"] == "main":
-                pckPath = os.path.join(
-                    export_settings["export_path"], "engine\\godot.zip"
+            for i, pack in enumerate(subpacks):
+                gdscripts.set_export_presets(
+                    godot_execute, project_path, export_settings["export_perset"], i
                 )
-                self.export_pck(project_path, export_settings, pckPath)
-            if pack["subpack_type"] == "inner_subpack":
-                pckPath = os.path.join(
-                    export_settings["export_path"], f"subpacks\\{pack['name']}.zip"
-                )
-                self.export_pck(project_path, export_settings, pckPath)
+                if pack["subpack_type"] == "main":
+                    pckPath = os.path.join(
+                        export_settings["export_path"], "engine\\godot.zip"
+                    )
+                    self.export_pck(project_path, export_settings, pckPath)
+                if pack["subpack_type"] == "inner_subpack":
+                    pckPath = os.path.join(
+                        export_settings["export_path"], f"subpacks\\{pack['name']}.zip"
+                    )
+                    self.export_pck(project_path, export_settings, pckPath)
+
+                if pack["subpack_type"] == "cdn_subpack":
+                    pckPath = os.path.join(localpath, f"tmp\\{pack['name']}.zip")
+                    self.export_pck(project_path, export_settings, pckPath)
+                    s3client.upload_file(
+                        pckPath, export_settings["bucket"], pack["cdn_path"]
+                    )
