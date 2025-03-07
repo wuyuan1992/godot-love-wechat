@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import List
 from nicegui import run, ui, app
@@ -254,6 +255,7 @@ def subpack_config(project):
         subpack_cfg.clear()
         subpacks_ui.refresh()
         modal.close()
+        print(json.dumps(export_settings.subpack_config))
 
     with modal:
         with ui.card().classes("w-full"):
