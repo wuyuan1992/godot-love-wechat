@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from re import sub
 from typing import List
@@ -90,6 +89,9 @@ def project_info(project):
             return
         if not export_settings.export_perset:
             ui.notify("未填写导出预设", type="negative")
+            return
+        if "main" not in subpack_types:
+            ui.notify("未能填写主包", type="negative")
             return
         if "cdn_subpack" in subpack_types and export_settings.cdn_bucket == "":
             ui.notify("包含CDN包，但未填写CDN的Bucket")
@@ -265,7 +267,10 @@ def subpacks_ui(modal: Dialog, tree: Tree):
                 ui.label(task["name"])
                 ui.badge(subpack_type[task["subpack_type"]])
                 if task.get("cdn_path"):
-                    ui.label(f"CDN目录：{task["cdn_path"]}")
+                    cdn_path = os.path.join(
+                        task.get("cdn_path", ""), f"{task["name"]}.zip"
+                    )
+                    ui.label(f"CDN目录: {cdn_path}")
                 ui.space()
                 ui.button("修改", on_click=lambda i=i: on_edit(i)).props("flat")
                 ui.button(on_click=lambda: on_delete(i), icon="delete").props(
