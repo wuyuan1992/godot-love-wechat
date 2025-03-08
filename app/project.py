@@ -1,8 +1,10 @@
 import json
 from pathlib import Path
+from re import sub
 from typing import List
 from nicegui import run, ui, app
 from nicegui.elements.dialog import Dialog
+from nicegui.elements.input import Input
 from nicegui.elements.tree import Tree
 import webview
 import os
@@ -103,10 +105,6 @@ def project_info(project):
 
             if not settings.get("cdn_secret_access_key"):
                 ui.notify("包含CDN包，但未设置CDN的Secret Access_key", type="negative")
-                return
-
-            if not settings.get("cdn_session_token"):
-                ui.notify("包含CDN包, 但未设置Session Token", type="negative")
                 return
 
         await run.io_bound(exporter.export_project, export_settings.to_dict(), project)
@@ -213,12 +211,16 @@ def export_config(project):
 
 @dataclass
 class SubpackConfig:
+    change_mode = False
+    change_index = 0
     subpack_resource: List[str] = field(default_factory=lambda: [])
     subpack_type: str = field(default="")
     name: str = field(default="")
     cdn_path: str = field(default="")
 
     def clear(self):
+        self.change_mode = False
+        self.change_index = 0
         self.subpack_resource = []
         self.subpack_type = ""
         self.name = ""
@@ -242,12 +244,18 @@ def subpacks_ui(modal: Dialog, tree: Tree):
         subpacks_ui.refresh()
 
     def on_edit(i):
-        subpack_cfg.clear()
+        subpack_cfg.change_mode = True
+        subpack_cfg.change_index = i
         tree.untick()
         task = export_settings.subpack_config[i]
         subpack_cfg.name = task["name"]
         subpack_cfg.subpack_type = task["subpack_type"]
         subpack_cfg.subpack_resource = task["subpack_resource"]
+        subpack_cfg.cdn_path = task["cdn_path"]
+        if not task["cdn_path"]:
+            subpack_cfg.cdn_path = None  # pyright: ignore
+
+        print(type(task["cdn_path"]))
         tree.tick(task["subpack_resource"])
         modal.open()
 
@@ -283,20 +291,16 @@ def subpack_config(project):
         if len(subpack_cfg.subpack_resource) == 0:
             ui.notify("未选择资源", type="negative")
             return
-        if subpack_cfg.subpack_type == "cdn_subpack" and subpack_cfg.cdn_path == "":
-            ui.notify("CDN包请填写上传地址", type="negative")
-            return
 
         new_pack = {
             "name": subpack_cfg.name,
             "subpack_type": subpack_cfg.subpack_type,
             "subpack_resource": subpack_cfg.subpack_resource.copy(),
+            "cdn_path": subpack_cfg.cdn_path,
         }
-
-        for i, pack in enumerate(export_settings.subpack_config):
-            if pack["name"] == subpack_cfg.name:
-                export_settings.subpack_config[i] = new_pack
-        if subpack_cfg.name not in [i["name"] for i in export_settings.subpack_config]:
+        if subpack_cfg.change_mode:
+            export_settings.subpack_config[subpack_cfg.change_index] = new_pack
+        else:
             export_settings.subpack_config.append(new_pack)
         tree.untick()  # pyright: ignore
         subpack_cfg.clear()
@@ -325,9 +329,9 @@ def subpack_config(project):
                 ui.input(
                     "CDN上传目录",
                     placeholder="上传到CDN的目录，选填",
-                ).classes(
-                    "w-full"
-                ).props("outlined").bind_value(subpack_cfg, "cdn_path")
+                ).props(
+                    "outlined"
+                ).classes("w-full").bind_value(subpack_cfg, "cdn_path")
         with ui.row(align_items="end").classes("w-full"):
             ui.space()
             ui.button("确定").on_click(on_add_pck)

@@ -25,7 +25,6 @@ def settings():
         setting_item.cdn_endpoint = settings_data.get("cdn_endpoint")
         setting_item.cdn_access_key_id = settings_data.get("cdn_access_key_id")
         setting_item.cdn_secret_access_key = settings_data.get("cdn_secret_access_key")
-        setting_item.cdn_session_token = settings_data.get("cdn_session_token")
 
     async def save_settings():
         await run.io_bound(
@@ -37,7 +36,6 @@ def settings():
                 "cdn_endpoint": setting_item.cdn_endpoint,
                 "cdn_access_key_id": setting_item.cdn_access_key_id,
                 "cdn_secret_access_key": setting_item.cdn_secret_access_key,
-                "cdn_session_token": setting_item.cdn_session_token,
             },
         )
         ui.notify("保存成功！")
@@ -83,11 +81,6 @@ def settings():
             placeholder="你的支持S3协议CDN Secret Access Key", label="Secret Access Key"
         ).classes("w-full") as i:
             i.bind_value(setting_item, "cdn_secret_access_key")
-
-        with ui.input(
-            placeholder="你的支持S3协议CDN Session Token", label="Session Token"
-        ).classes("w-full") as i:
-            i.bind_value(setting_item, "cdn_session_token")
 
         with ui.column(align_items="end").classes("w-full mt-4"):
             ui.button("保存", icon="save", on_click=save_settings)

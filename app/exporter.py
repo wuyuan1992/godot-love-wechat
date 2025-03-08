@@ -148,7 +148,6 @@ class Exporter:
                 "s3",
                 aws_access_key_id=settings["cdn_access_key_id"],
                 aws_secret_access_key=settings["cdn_secret_access_key"],
-                aws_session_token=settings["cdn_session_token"],
                 endpoint_url=settings["cdn_endpoint"],
                 config=Config(
                     s3={"addressing_style": "virtual"}, signature_version="v4"
@@ -170,8 +169,16 @@ class Exporter:
                     self.export_pck(project_path, export_settings, pckPath)
 
                 if pack["subpack_type"] == "cdn_subpack":
-                    pckPath = os.path.join(localpath, f"tmp\\{pack['name']}.zip")
+                    tmpdir = os.path.join(localpath, "tmp")
+                    if not os.path.exists(tmpdir):
+                        os.mkdir(tmpdir)
+                    pckPath = os.path.join(tmpdir, f"{pack['name']}.zip")
                     self.export_pck(project_path, export_settings, pckPath)
+                    upload_path = (
+                        os.path.join(pack["cdn_path"], f"{pack['name']}.zip")
+                        if pack["cdn_path"]
+                        else f"{pack['name']}.zip"
+                    )
                     s3client.upload_file(
-                        pckPath, export_settings["bucket"], pack["cdn_path"]
+                        pckPath, export_settings["cdn_bucket"], upload_path
                     )
