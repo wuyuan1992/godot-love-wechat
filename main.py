@@ -8,6 +8,7 @@ from app.project import project
 static_folder = Path(__file__).parent / "assets"
 
 app.add_static_files("/assets", str(static_folder))
+ui.add_css("::-webkit-scrollbar { display: none; }")
 
 
 @ui.page("/")
@@ -33,5 +34,5 @@ ui.run(
     title="Godot Love Wechat",
     window_size=(1024, 768),
     native=True,
-    reload=True,
+    reload=False,
 )

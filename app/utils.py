@@ -60,6 +60,9 @@ def build_tree_dict(
 
     _, extension = os.path.splitext(path.name)
 
+    if path.name.startswith("."):
+        return None
+
     if path.name in ["export_presets.cfg", "minigame.export.json"]:
         return None
     if extension in excludes:
