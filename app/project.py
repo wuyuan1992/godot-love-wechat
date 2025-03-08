@@ -193,9 +193,9 @@ def export_config(project):
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("CDN Bucket")
             ui.space()
-            ui.input().props("outlined outlined dense").classes("w-64").bind_value(
-                export_settings, "cdn_bucket"
-            )
+            ui.input(placeholder="上传CDN的Bucket名称").props(
+                "outlined outlined dense"
+            ).classes("w-64").bind_value(export_settings, "cdn_bucket")
 
         with ui.row(align_items="center").classes("border-b w-full p-2"):
             ui.label("导出目录")
@@ -256,7 +256,7 @@ def subpacks_ui(modal: Dialog, tree: Tree):
             with ui.row(align_items="center").classes("border-b w-full p-2"):
                 ui.label(task["name"])
                 ui.badge(subpack_type[task["subpack_type"]])
-                if task["cdn_path"]:
+                if task.get("cdn_path"):
                     ui.label(f"CDN目录：{task["cdn_path"]}")
                 ui.space()
                 ui.button("修改", on_click=lambda i=i: on_edit(i)).props("flat")
@@ -268,7 +268,7 @@ def subpacks_ui(modal: Dialog, tree: Tree):
 def subpack_config(project):
     project_path = Path(project["path"]).resolve()
     file_tree = utils.build_tree_dict(project_path)
-    modal = ui.dialog()
+    modal = ui.dialog().classes("max-w-[800px]")
 
     def on_tick(e):
         subpack_cfg.subpack_resource = e.value
@@ -303,35 +303,35 @@ def subpack_config(project):
         subpacks_ui.refresh()
         modal.close()
 
-    with modal:
-        with ui.card().classes("w-full"):
-            with ui.row(align_items="start").classes("w-full h-96"):
-                with ui.column().classes("h-full overflow-auto"):
-                    tree = (
-                        ui.tree(
-                            [file_tree],  ## pyright: ignore
-                            label_key="label",
-                            tick_strategy="leaf",
-                        )
-                        .expand()
-                        .on_tick(on_tick)
+    with modal, ui.card().style("width: 800px; max-width: None"):
+        with ui.row(align_items="start").classes("w-full h-96"):
+            with ui.column().classes("h-full overflow-auto w-[360px]"):
+                tree = (
+                    ui.tree(
+                        [file_tree],  ## pyright: ignore
+                        label_key="label",
+                        tick_strategy="leaf",
                     )
-                with ui.column().classes("h-full"):
-                    ui.input("名称").props("outlined").classes("w-full").bind_value(
-                        subpack_cfg, "name"
-                    )
-                    ui.select(subpack_type).props("outlined").classes(
-                        "w-full"
-                    ).bind_value(subpack_cfg, "subpack_type")
-                with ui.column().classes("h-full"):
-                    ui.input(
-                        "CDN上传目录",
-                        placeholder="上传到CDN的目录，后续根据你的地址下载，非CDN的包可以不填写",
-                    ).bind_value(subpack_cfg, "cdn_path")
-            with ui.row(align_items="end").classes("w-full"):
-                ui.space()
-                ui.button("确定").on_click(on_add_pck)
-                ui.button("取消").on_click(lambda: modal.close())
+                    .expand()
+                    .on_tick(on_tick)
+                )
+            with ui.column().classes("h-full w-[350px]"):
+                ui.input("名称").props("outlined").classes("w-full").bind_value(
+                    subpack_cfg, "name"
+                )
+                ui.select(subpack_type).props("outlined").classes("w-full").bind_value(
+                    subpack_cfg, "subpack_type"
+                )
+                ui.input(
+                    "CDN上传目录",
+                    placeholder="上传到CDN的目录，选填",
+                ).classes(
+                    "w-full"
+                ).props("outlined").bind_value(subpack_cfg, "cdn_path")
+        with ui.row(align_items="end").classes("w-full"):
+            ui.space()
+            ui.button("确定").on_click(on_add_pck)
+            ui.button("取消").on_click(lambda: modal.close())
 
     with ui.row(align_items="center").classes("w-full border-b p-4 justify-between"):
         ui.label("分包配置")
