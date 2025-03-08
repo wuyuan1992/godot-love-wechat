@@ -8,6 +8,7 @@ import boto3
 from botocore.config import Config
 from pathlib import Path
 import subprocess
+import shutil
 
 
 class Exporter:
@@ -142,6 +143,7 @@ class Exporter:
         godot_execute: str,
     ):
         localpath = Path().absolute().resolve().as_posix()
+        tmpdir = os.path.join(localpath, "tmp")
         settings = self.storage.get("settings.json")
         if settings:
             s3client = boto3.client(
@@ -169,7 +171,6 @@ class Exporter:
                     self.export_pck(project_path, export_settings, pckPath)
 
                 if pack["subpack_type"] == "cdn_subpack":
-                    tmpdir = os.path.join(localpath, "tmp")
                     if not os.path.exists(tmpdir):
                         os.mkdir(tmpdir)
                     pckPath = os.path.join(tmpdir, f"{pack['name']}.zip")
@@ -182,3 +183,4 @@ class Exporter:
                     s3client.upload_file(
                         pckPath, export_settings["cdn_bucket"], upload_path
                     )
+            shutil.rmtree(tmpdir)
