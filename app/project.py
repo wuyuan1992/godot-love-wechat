@@ -3,7 +3,6 @@ from re import sub
 from typing import List
 from nicegui import run, ui, app
 from nicegui.elements.dialog import Dialog
-from nicegui.elements.input import Input
 from nicegui.elements.tree import Tree
 import webview
 import os
@@ -120,8 +119,13 @@ def project_info(project):
         await run.io_bound(exporter.preview_project, export_settings.to_dict())
 
     with ui.row(align_items="center").classes("w-full"):
+        icon = (
+            Image.open(project["icon"])
+            if not project["icon"].endswith(".svg")
+            else "/assets/logo.svg"
+        )
         with ui.column(align_items="center").classes("w-1/5"):
-            ui.image(Image.open(project["icon"])).classes("w-32 h-32")
+            ui.image(icon).classes("w-32 h-32")
         with ui.column(align_items="baseline").classes("w-2/5 mt-2"):
             ui.label(project["name"]).classes("text-h6")
             ui.label(f"Version: {project["version"]}").classes("text-subtitle2")
