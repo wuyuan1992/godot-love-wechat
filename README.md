@@ -115,7 +115,7 @@ func on_sync_error(error):
 
 ### 分包管理
 分包管理有些复杂具体情况可以看视频讲解
-[https://www.bilibili.com/video/BV18rRhYmEvd/#reply114131558470773](https://www.bilibili.com/video/BV18rRhYmEvd/#reply114131558470773)
+[https://www.bilibili.com/video/BV18rRhYmEvd](https://www.bilibili.com/video/BV18rRhYmEvd)
 
 ## 常见问题
 
