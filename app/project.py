@@ -89,7 +89,7 @@ def project_info(project):
         if not export_settings.export_perset:
             ui.notify("未填写导出预设", type="negative")
             return
-        if "main" not in subpack_types:
+        if export_settings.subpack_config and "main" not in subpack_types:
             ui.notify("未能填写主包", type="negative")
             return
         if "cdn_subpack" in subpack_types and export_settings.cdn_bucket == "":
