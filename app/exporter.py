@@ -144,6 +144,8 @@ class Exporter:
     ):
         localpath = Path().absolute().resolve().as_posix()
         tmpdir = os.path.join(localpath, "tmp")
+        if not os.path.exists(tmpdir):
+            os.mkdir(tmpdir)
         settings = self.storage.get("settings.json")
         if settings:
             for i, pack in enumerate(subpacks):
@@ -171,8 +173,7 @@ class Exporter:
                             s3={"addressing_style": "virtual"}, signature_version="v4"
                         ),
                     )
-                    if not os.path.exists(tmpdir):
-                        os.mkdir(tmpdir)
+
                     pckPath = os.path.join(tmpdir, f"{pack['name']}.zip")
                     self.export_pck(project_path, export_settings, pckPath)
                     upload_path = (
