@@ -21,8 +21,9 @@
 
 - [x] 分离导出模板与打包的
 - [x] 文件系统解决方案
+- [x] 分包管理
 - [ ] pck文件brotil压缩与加载
-- [ ] 分包管理
+
 
 ## 支持系统
 
@@ -111,6 +112,10 @@ func on_sync_sucess():
 func on_sync_error(error):
     # 失败回调
 ```
+
+### 分包管理
+分包管理有些复杂具体情况可以看视频讲解
+[https://www.bilibili.com/video/BV18rRhYmEvd/#reply114131558470773](https://www.bilibili.com/video/BV18rRhYmEvd/#reply114131558470773)
 
 ## 常见问题
 
