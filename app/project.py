@@ -261,7 +261,6 @@ def subpacks_ui(modal: Dialog, tree: Tree):
         if not task["cdn_path"]:
             subpack_cfg.cdn_path = None  # pyright: ignore
 
-        print(type(task["cdn_path"]))
         tree.tick(task["subpack_resource"])
         modal.open()
 

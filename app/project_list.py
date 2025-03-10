@@ -35,7 +35,7 @@ class ProjectManager:
 @ui.refreshable
 def project_card():
     with ui.grid(columns=3).classes("w-full p-4"):
-        for project in project_manager.projects:
+        for i, project in enumerate(project_manager.projects):
             if project["name"].startswith(project_manager.search):
                 icon = (
                     Image.open(project["icon"])
@@ -55,14 +55,16 @@ def project_card():
                         ui.button(
                             "转换",
                             icon="swap_horiz",
-                            on_click=lambda: ui.navigate.to(
-                                f"/projects/{project["id"]}"
+                            on_click=lambda i=i: ui.navigate.to(
+                                f"/projects/{project_manager.projects[i]['id']}"  # pyright: ignore
                             ),
                         ).props("flat")
                         ui.button(
                             "删除",
                             icon="delete",
-                            on_click=lambda: project_manager.remove(project),
+                            on_click=lambda i=i: project_manager.remove(
+                                project_manager.projects[i]  # pyright: ignore
+                            ),
                         ).props("flat")
 
 

@@ -146,15 +146,6 @@ class Exporter:
         tmpdir = os.path.join(localpath, "tmp")
         settings = self.storage.get("settings.json")
         if settings:
-            s3client = boto3.client(
-                "s3",
-                aws_access_key_id=settings["cdn_access_key_id"],
-                aws_secret_access_key=settings["cdn_secret_access_key"],
-                endpoint_url=settings["cdn_endpoint"],
-                config=Config(
-                    s3={"addressing_style": "virtual"}, signature_version="v4"
-                ),
-            )
             for i, pack in enumerate(subpacks):
                 gdscripts.set_export_presets(
                     godot_execute, project_path, export_settings["export_perset"], i
@@ -171,6 +162,15 @@ class Exporter:
                     self.export_pck(project_path, export_settings, pckPath)
 
                 if pack["subpack_type"] == "cdn_subpack":
+                    s3client = boto3.client(
+                        "s3",
+                        aws_access_key_id=settings["cdn_access_key_id"],
+                        aws_secret_access_key=settings["cdn_secret_access_key"],
+                        endpoint_url=settings["cdn_endpoint"],
+                        config=Config(
+                            s3={"addressing_style": "virtual"}, signature_version="v4"
+                        ),
+                    )
                     if not os.path.exists(tmpdir):
                         os.mkdir(tmpdir)
                     pckPath = os.path.join(tmpdir, f"{pack['name']}.zip")
