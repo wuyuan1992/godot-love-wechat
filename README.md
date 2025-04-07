@@ -106,7 +106,7 @@ var _on_error = JavaScriptBridge.create_callback(on_sync_error)
 func _ready():
     sdk.syncfs(_on_sucess, _on_error)
 
-func on_sync_sucess():
+func on_sync_sucess(args):
     # 成功回调
 
 func on_sync_error(error):
