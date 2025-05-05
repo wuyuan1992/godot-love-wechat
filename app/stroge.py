@@ -3,8 +3,7 @@ import json
 
 class Storge:
     def __init__(self) -> None:
-        self.username = os.getlogin()
-        self.path = f"C:\\Users\\{self.username}\\AppData\\Local\\godot-love-wechat"
+        self.path = os.path.join(os.environ['LOCALAPPDATA'], 'godot-love-wechat')
 
     def save(self, file, data):
         print(self.path)
