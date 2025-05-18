@@ -99,7 +99,7 @@ wasm的文件系统方案，godot在web平台的方案是使用indexedb，然后
 JavaScript 依赖于垃圾回收，而 Godot 使用引用计数进行内存管理。这意味着你必须显式创建回调（它们本身作为 JavaScriptObjects 返回）并且必须保留它们的引用
 
 ```gdscript
-var sdk = JavaScriptBridge.get_interface("GodotSdk")
+var sdk = JavaScriptBridge.get_interface("godotSdk")
 var _on_sucess = JavaScriptBridge.create_callback(on_sync_sucess)
 var _on_error = JavaScriptBridge.create_callback(on_sync_error)
 
