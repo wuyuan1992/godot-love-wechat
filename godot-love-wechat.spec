@@ -1,11 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import nicegui
 
+nicegui_path = os.path.dirname(nicegui.__file__)
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:\\Users\\35387\\Project\\godot-love-wechat\\.venv\\Lib\\site-packages\\nicegui', 'nicegui'), ('assets', 'assets')],
+    datas=[(nicegui_path, 'nicegui'), ('assets', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
